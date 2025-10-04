@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blackjack</title>
+</head>
+<body>
+    
+  <h1>Blackjack</h1>
+
+  <!-- View -->
+   
+  <pre id="log">Ready.</pre>
+
+  <!-- Controller buttons -->
+
+  <button id="deal">Deal</button>
+  <button id="hit" disabled>Hit</button>
+  <button id="stand" disabled>Stand</button>
+
+  <script>
+
+  // ===== Model =====
+
+  const Model = {
+    state: { player: [], dealer: [] },
+    start() { this.state.player = ['?']; this.state.dealer = ['?']; }
+  };
+
+  // ===== View =====
+
+  const View = {
+    log: document.getElementById('log'),
+    render(state) {
+      this.log.textContent = `Dealer: ${state.dealer.join(' ')}\nPlayer: ${state.player.join(' ')}`;
+    }
+  };
+
+  // ===== Controller =====
+
+  document.getElementById('deal').addEventListener('click', () => {
+    Model.start();
+    View.render(Model.state);
+    document.getElementById('hit').disabled = false;
+    document.getElementById('stand').disabled = false;
+  });
+
+  </script>
+
+</body>
+</html>
