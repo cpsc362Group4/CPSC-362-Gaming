@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Othello Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #game {
+            text-align: center;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            border: 2px solid #000;
+            background-color: green;
+        }
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        .piece {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .black {
+            background-color: black;
+        }
+        .white {
+            background-color: white;
+        }
+        .valid {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        #status {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+        #reset {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="board"></div>
+        <div id="status">Black's turn</div>
+        <button id="reset">Reset Game</button>
+    </div>
+
+    <script>
+        const boardSize = 8;
+        let board = [];
+        let currentPlayer = 'black';
+        let gameOver = false;
+
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],           [0, 1],
+            [1, -1],  [1, 0],  [1, 1]
+        ];
+
+        function initBoard() {
+            board = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+            board[3][3] = 'white';
+            board[3][4] = 'black';
+            board[4][3] = 'black';
+            board[4][4] = 'white';
+            renderBoard();
+            updateStatus();
+        }
+
+        function renderBoard() {
+            const boardElement = document.getElementById('board');
+            boardElement.innerHTML = '';
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    if (board[row][col]) {
+                        const piece = document.createElement('div');
+                        piece.classList.add('piece', board[row][col]);
+                        cell.appendChild(piece);
+                    } else if (isValidMove(row, col)) {
+                        cell.classList.add('valid');
+                    }
+                    cell.addEventListener('click', handleClick);
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        function handleClick(event) {
+            if (gameOver) return;
+            let target = event.target;
+            if (target.classList.contains('piece')) {
+                target = target.parentElement;
+            }
+            const row = parseInt(target.dataset.row);
+            const col = parseInt(target.dataset.col);
+            if (isNaN(row) || isNaN(col)) return;
+            if (isValidMove(row, col)) {
+                makeMove(row, col);
+                switchPlayer();
+                renderBoard();
+                updateStatus();
+            }
+        }
+
+        function isValidMove(row, col) {
+            if (board[row][col] !== null) return false;
+            for (const [dr, dc] of directions) {
+                let r = row + dr;
+                let c = col + dc;
+                let hasOpponent = false;
+                while (r >= 0 && r < boardSize && c >= 0 && c < boardSize) {
+                    if (board[r][c] === null) break;
+                    if (board[r][c] === currentPlayer) {
+                        if (hasOpponent) return true;
+                        break;
+                    }
+                    hasOpponent = true;
+                    r += dr;
+                    c += dc;
+                }
+            }
+            return false;
+        }
+
+        function makeMove(row, col) {
+            board[row][col] = currentPlayer;
+            for (const [dr, dc] of directions) {
+                let flips = [];
+                let r = row + dr;
+                let c = col + dc;
+                while (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] !== null && board[r][c] !== currentPlayer) {
+                    flips.push([r, c]);
+                    r += dr;
+                    c += dc;
+                }
+                if (r >= 0 && r < boardSize && c >= 0 && c < boardSize && board[r][c] === currentPlayer) {
+                    for (const [fr, fc] of flips) {
+                        board[fr][fc] = currentPlayer;
+                    }
+                }
+            }
+        }
+
+        function switchPlayer() {
+            currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+            if (!hasValidMoves()) {
+                currentPlayer = currentPlayer === 'black' ? 'white' : 'black';
+                if (!hasValidMoves()) {
+                    gameOver = true;
+                }
+            }
+        }
+
+        function hasValidMoves() {
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (isValidMove(row, col)) return true;
+                }
+            }
+            return false;
+        }
+
+        function updateStatus() {
+            if (gameOver) {
+                const { black, white } = countPieces();
+                let winner = black > white ? 'Black' : white > black ? 'White' : 'Tie';
+                document.getElementById('status').textContent = `Game Over! ${winner} wins. Black: ${black}, White: ${white}`;
+            } else {
+                document.getElementById('status').textContent = `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s turn`;
+            }
+        }
+
+        function countPieces() {
+            let black = 0;
+            let white = 0;
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (board[row][col] === 'black') black++;
+                    if (board[row][col] === 'white') white++;
+                }
+            }
+            return { black, white };
+        }
+
+        document.getElementById('reset').addEventListener('click', () => {
+            gameOver = false;
+            currentPlayer = 'black';
+            initBoard();
+        });
+
+        initBoard();
+    </script>
+</body>
+</html>
