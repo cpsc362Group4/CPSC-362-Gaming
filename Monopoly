@@ -1,1 +1,133 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Monopoly Lite</title>
+  <style>
+    #board {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+    }
+    .space {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 12px;
+    }
+    .player {
+      background-color: yellow;
+      border-radius: 50%;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Monopoly Lite</h1>
+
+  <!-- View -->
+  <div id="board"></div>
+  <pre id="log">Click Roll to begin.</pre>
+
+  <!-- Controller -->
+  <button id="roll">Roll</button>
+
+  <script>
+  // ===== Model =====
+
+  const Model = {
+    state: {
+      playerPosition: 0,
+      playerMoney: 1000,
+      board: [],
+      owned: {},
+    },
+
+    initBoard() {
+      // Create 10 spaces with random cost between $100-$300
+      this.state.board = Array.from({ length: 10 }, (_, i) => ({
+        name: `Space ${i}`,
+        cost: 100 + Math.floor(Math.random() * 201), // $100–$300
+      }));
+    },
+
+    rollDice() {
+      return Math.floor(Math.random() * 6) + 1;
+    },
+
+    movePlayer(steps) {
+      const state = this.state;
+      state.playerPosition = (state.playerPosition + steps) % state.board.length;
+
+      const space = state.board[state.playerPosition];
+      const pos = state.playerPosition;
+
+      // If unowned, auto-buy if enough money
+      if (!state.owned[pos]) {
+        if (state.playerMoney >= space.cost) {
+          state.playerMoney -= space.cost;
+          state.owned[pos] = true;
+          return `Landed on ${space.name}. Bought for $${space.cost}.`;
+        } else {
+          return `Landed on ${space.name}, but not enough money to buy.`;
+        }
+      } else {
+        return `Landed on ${space.name}, already owned.`;
+      }
+    }
+  };
+
+  // ===== View =====
+
+  const View = {
+    log: document.getElementById('log'),
+    boardEl: document.getElementById('board'),
+
+    renderBoard(state) {
+      this.boardEl.innerHTML = '';
+      state.board.forEach((space, i) => {
+        const div = document.createElement('div');
+        div.className = 'space';
+        div.textContent = `${space.name}\n$${space.cost}`;
+        if (state.playerPosition === i) {
+          const p = document.createElement('div');
+          p.className = 'player';
+          p.textContent = 'P';
+          div.appendChild(p);
+        }
+        if (state.owned[i]) {
+          div.style.backgroundColor = '#a0f0a0'; // owned property
+        }
+        this.boardEl.appendChild(div);
+      });
+    },
+
+    updateLog(message, money) {
+      this.log.textContent = `${message}\nMoney: $${money}`;
+    }
+  };
+
+  // ===== Controller =====
+
+  document.getElementById('roll').addEventListener('click', () => {
+    const roll = Model.rollDice();
+    const result = Model.movePlayer(roll);
+    View.renderBoard(Model.state);
+    View.updateLog(`Rolled a ${roll}. ${result}`, Model.state.playerMoney);
+  });
+
+  // ===== Initialize =====
+
+  Model.initBoard();
+  View.renderBoard(Model.state);
+  View.updateLog('Game started. Click Roll to play.', Model.state.playerMoney);
+
+  </script>
+
+</body>
+</html>
