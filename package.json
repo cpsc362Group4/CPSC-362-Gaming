@@ -1,0 +1,25 @@
+{
+  "name": "cpsc-362-gaming",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cpsc362Group4/CPSC-362-Gaming.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cpsc362Group4/CPSC-362-Gaming/issues"
+  },
+  "homepage": "https://github.com/cpsc362Group4/CPSC-362-Gaming#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.37.0",
+    "eslint": "^9.37.0",
+    "globals": "^16.4.0"
+  }
+}
