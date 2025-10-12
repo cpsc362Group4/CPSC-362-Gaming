@@ -1,7 +1,6 @@
 
 <!-- Joshua Kang -->
 
-
 <!--
 This was created using AI but will be scaled down and back up through user efforts. 
 We used AI to speed up Progress.
@@ -24,7 +23,7 @@ We used AI to speed up Progress.
       border: 1px solid #333;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: center;    
       font-size: 12px;
     }
     .player {
@@ -93,23 +92,23 @@ We used AI to speed up Progress.
   // ===== View =====
 
   const View = {
-    log: document.getElementById('log'),
-    boardEl: document.getElementById('board'),
+    log: document.getElementById("log"),
+    boardEl: document.getElementById("board"),
 
     renderBoard(state) {
-      this.boardEl.innerHTML = '';
+      this.boardEl.innerHTML = "";
       state.board.forEach((space, i) => {
-        const div = document.createElement('div');
-        div.className = 'space';
+        const div = document.createElement("div");
+        div.className = "space";
         div.textContent = `${space.name}\n$${space.cost}`;
         if (state.playerPosition === i) {
-          const p = document.createElement('div');
-          p.className = 'player';
-          p.textContent = 'P';
+          const p = document.createElement("div");
+          p.className = "player";
+          p.textContent = "P";
           div.appendChild(p);
         }
         if (state.owned[i]) {
-          div.style.backgroundColor = '#a0f0a0'; // owned property
+          div.style.backgroundColor = "#a0f0a0"; // owned property
         }
         this.boardEl.appendChild(div);
       });
@@ -122,7 +121,7 @@ We used AI to speed up Progress.
 
   // ===== Controller =====
 
-  document.getElementById('roll').addEventListener('click', () => {
+  document.getElementById("roll").addEventListener("click", () => {
     const roll = Model.rollDice();
     const result = Model.movePlayer(roll);
     View.renderBoard(Model.state);
@@ -133,7 +132,7 @@ We used AI to speed up Progress.
 
   Model.initBoard();
   View.renderBoard(Model.state);
-  View.updateLog('Game started. Click Roll to play.', Model.state.playerMoney);
+  View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
 
   </script>
 

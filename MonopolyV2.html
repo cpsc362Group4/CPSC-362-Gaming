@@ -1,0 +1,172 @@
+<!-- Joshua Kang -->
+
+<!--
+This was created using AI but will be scaled down and back up through user efforts. 
+We used AI to speed up Progress.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Monopoly Lite</title>
+  <style>
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+      gap: 2px;
+      width: max-content;
+      margin: 20px 0;
+    }
+
+    .space {
+      width: 60px;
+      height: 60px;
+      border: 1px solid #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+      position: relative;
+      text-align: center;
+    }
+
+    .player {
+      background-color: yellow;
+      border-radius: 50%;
+      padding: 3px;
+      font-size: 10px;
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+    }
+
+    #log {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Monopoly Lite</h1>
+
+  <!-- View -->
+  <div id="board"></div>
+  <pre id="log">Click Roll to begin.</pre>
+
+  <!-- Controller -->
+  <button id="roll">Roll</button>
+
+  <script>
+    // ===== Model =====
+
+    const Model = {
+      state: {
+        playerPosition: 0,
+        playerMoney: 1000,
+        board: [],
+        owned: {},
+      },
+
+      initBoard() {
+        // Create 16 spaces for square layout
+        this.state.board = Array.from({ length: 16 }, (_, i) => ({
+          name: `Space ${i}`,
+          cost: 100 + Math.floor(Math.random() * 201),
+        }));
+      },
+
+      rollDice() {
+        return Math.floor(Math.random() * 6) + 1;
+      },
+
+      movePlayer(steps) {
+        const state = this.state;
+        state.playerPosition = (state.playerPosition + steps) % state.board.length;
+
+        const space = state.board[state.playerPosition];
+        const pos = state.playerPosition;
+
+        // If unowned, auto-buy if enough money
+        if (!state.owned[pos]) {
+          if (state.playerMoney >= space.cost) {
+            state.playerMoney -= space.cost;
+            state.owned[pos] = true;
+            return `Landed on ${space.name}. Bought for $${space.cost}.`;
+          } else {
+            return `Landed on ${space.name}, but not enough money to buy.`;
+          }
+        } else {
+          return `Landed on ${space.name}, already owned.`;
+        }
+      }
+    };
+
+    // ===== View =====
+
+    const View = {
+      log: document.getElementById("log"),
+      boardEl: document.getElementById("board"),
+
+      renderBoard(state) {
+        this.boardEl.innerHTML = "";
+
+        // Square path mapping: 5x5 grid, 16 active cells
+        const positions = [
+          0,  1,  2,  3,  4,      // Top row
+          9, 14, 19, 24,          // Right column
+          23, 22, 21, 20, 15,     // Bottom row (right to left)
+          10, 5                  // Left column (bottom to top)
+        ];
+
+        for (let i = 0; i < 25; i++) {
+          const div = document.createElement("div");
+          div.className = "space";
+
+          const boardIndex = positions.indexOf(i);
+          if (boardIndex !== -1) {
+            const space = state.board[boardIndex];
+            div.textContent = `${space.name}\n$${space.cost}`;
+
+            if (state.playerPosition === boardIndex) {
+              const p = document.createElement("div");
+              p.className = "player";
+              p.textContent = "P";
+              div.appendChild(p);
+            }
+
+            if (state.owned[boardIndex]) {
+              div.style.backgroundColor = "#a0f0a0";
+            }
+          } else {
+            div.style.border = "none"; // Empty cell
+          }
+
+          this.boardEl.appendChild(div);
+        }
+      },
+
+      updateLog(message, money) {
+        this.log.textContent = `${message}\nMoney: $${money}`;
+      }
+    };
+
+    // ===== Controller =====
+
+    document.getElementById("roll").addEventListener("click", () => {
+      const roll = Model.rollDice();
+      const result = Model.movePlayer(roll);
+      View.renderBoard(Model.state);
+      View.updateLog(`Rolled a ${roll}. ${result}`, Model.state.playerMoney);
+    });
+
+    // ===== Initialize =====
+
+    Model.initBoard();
+    View.renderBoard(Model.state);
+    View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
+  </script>
+
+</body>
+</html>
