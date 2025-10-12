@@ -23,5 +23,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Run ESLint
-        run: npm run lint
+        run: npx eslint .
       - run: echo "🍏 This job's status is ${{ job.status }}."
