@@ -73,7 +73,7 @@ Each mini-game is an independent module connected through the main menu interfac
 - Add sound effects and background music toggle
 - Polish UI with consistent color themes
 
-### Contributors
+### 🫡 Contributors
 
 - Cody Nguyen
 - Joshua Kang
