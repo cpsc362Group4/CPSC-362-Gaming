@@ -47,7 +47,7 @@ For Non-Developers
 2. Locate and open the index.html file in your web browser.
 3. Click any game from the main menu to start playing — no installation required!
 
-🧩 Diagram / Visual Explanation
+### 🧩 Diagram / Visual Explanation
 
 High-Level Project Structure (MVC Overview)
 ```css
@@ -59,13 +59,13 @@ HTML/CSS UI (View)
 ```
 Each mini-game is an independent module connected through the main menu interface.
 
-🐞 Known Issues
+### 🐞 Known Issues
 
 - Some games may not scale properly on mobile devices.
 - Audio files may not load in all browsers.
 - Shared scoreboard feature still under development.
 
-🧱 To-Do Items
+### 🧱 To-Do Items
 
 - Add leaderboard tracking for all games
 - Improve responsive layout for smaller screens
