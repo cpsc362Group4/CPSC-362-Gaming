@@ -1,55 +1,986 @@
-<!--
- Cody Nguyen
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Blackjack</title>
-</head>
-<body>
+
+  <style>
+    /* ============================================================
+       GLOBAL
+    ============================================================ */
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #00151a, #000);
+      color: #f5f5f5;
+    }
+
+    .game-wrapper {
+      width: 1000px;
+      max-width: 100%;
+      padding: 20px;
+    }
+
+    /* ============================================================
+       TABLE BACKGROUND
+    ============================================================ */
+    .table {
+      position: relative;
+      width: 100%;
+      padding-top: 55%;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0b4f2a;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+    }
+
+    .felt-gradient {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(255, 255, 255, 0.08), transparent 55%),
+        radial-gradient(circle at 50% 80%, rgba(0, 0, 0, 0.3), transparent 60%),
+        #0b4f2a;
+    }
+
+    .felt-gradient::before,
+    .felt-gradient::after {
+      content: "";
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 70%;
+      border-radius: 100% 100% 0 0;
+      border: 3px solid rgba(255, 255, 255, 0.18);
+      border-bottom: none;
+    }
+
+    .felt-gradient::before {
+      top: 16%;
+    }
+
+    .felt-gradient::after {
+      top: 26%;
+    }
+
+    /* ============================================================
+       NEON TITLE ARC
+    ============================================================ */
+    .table-text {
+      position: absolute;
+      top: 150%;
+      left: 0;
+      right: 0;
+      pointer-events: none;
+    }
     
-  <h1>Blackjack</h1>
 
-  <!-- View -->
-   
-  <pre id="log">Ready.</pre>
+    /* ============================================================
+    RULES + BACKGROUND TABLE TEXT — LOWERED MORE
+    ============================================================ */
+    .table-rules {
+    position: absolute;
+    top: 30%;          /* was 28%, now lowered */
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    opacity: 0.40;
+    z-index: 0;
+    filter:
+        drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3))
+        blur(0.4px)
+        contrast(1.15);
+    font-family: "Georgia", "Times New Roman", serif;
+    letter-spacing: 2px;
+    }
 
-  <!-- Controller buttons -->
 
-  <button id="deal">Deal</button>
-  <button id="hit" disabled>Hit</button>
-  <button id="stand" disabled>Stand</button>
+    /* ============================================================
+    POSITIONS — EVEN CHIP SPACING + BETTER ALIGNMENT
+    ============================================================ */
+    .dealer-area,
+    .player-area,
+    .npc-left,
+    .npc-right {
+    position: absolute;
+    text-align: center;
+    z-index: 2;
+    }
 
-  <script>
+    /* Dealer */
+    .dealer-area {
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    }
 
-  // ===== Model =====
+    /* Player */
+    .player-area {
+    top: 56%;
+    left: 50%;
+    transform: translateX(-50%);
+    }
 
-  const Model = {
-    state: { player: [], dealer: [] },
-    start() { this.state.player = ["?"]; this.state.dealer = ["?"]; }
+    /* NPC Left (Alex) */
+    .npc-left {
+    top: 58%;
+    left: 12%;
+    transform: translateX(-50%);
+    }
+
+    /* NPC Right (Jordan) */
+    .npc-right {
+    top: 58%;
+    right: 12%;
+    transform: translateX(50%);
+    }
+
+    /* Chip spacing improvement */
+    .chip {
+    margin-top: 14px;
+    }
+
+
+    .hand-title {
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .dealer-name {
+      color: #ffd700;
+    }
+
+    .hand-value {
+      color: #d7e7ff;
+    }
+
+    /* ============================================================
+       CARDS (NO ANIMATION)
+    ============================================================ */
+    .cards {
+      display: inline-flex;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .card {
+        width: 40px;
+        height: 56px;
+        border-radius: 6px;
+        /* Make card slightly see-through so table text shows behind */
+        background: rgba(250, 250, 250, 0.63);
+        color: #111;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(1px); /* soft blur of the felt text under the card */
+    }
+
+    .card.hidden {
+    /* keep the hole card solid so it still hides everything */
+        background: #0b4f2a;
+        border: 1px solid #fff;
+        color: #0b4f2a;
+    }
+
+
+    .card.blackjack {
+      border: 2px solid #00e676;
+    }
+
+    /* ============================================================
+       CHIPS
+    ============================================================ */
+    .chip {
+      margin-top: 8px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+    }
+
+    .chip-inner {
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #000;
+    }
+
+    /* Player chip (orange) */
+    .chip-player {
+      border: 8px solid #ff9f43;
+      background:
+        repeating-conic-gradient(#ff9f43 0 15deg, #fff 15deg 30deg);
+    }
+
+    /* Alex chip (blue) */
+    .chip-alex {
+      border: 8px solid #3aaaff;
+      background:
+        repeating-conic-gradient(#3aaaff 0 15deg, #fff 15deg 30deg);
+    }
+
+    /* Jordan chip (purple) */
+    .chip-jordan {
+      border: 8px solid #b066ff;
+      background:
+        repeating-conic-gradient(#b066ff 0 15deg, #fff 15deg 30deg);
+    }
+
+    /* ============================================================
+       ACTION BUTTONS — SMALLER + HIGHER + GLOW BORDER
+    ============================================================ */
+    .actions-right {
+      position: absolute;
+      top: 4%;
+      right: 3.5%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 150px;
+      z-index: 3;
+    }
+
+    .action-btn {
+      padding: 8px 0;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: radial-gradient(circle at top, #18221a, #050807);
+      color: #d7ffd8;
+      border: 3px solid transparent;
+      box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.8),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+      text-shadow: 0 0 6px rgba(0, 0, 0, 0.8);
+      transition: transform 0.12s ease;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    .action-btn:not(:disabled):hover {
+      transform: translateY(-2px);
+    }
+
+    /* HIT – green */
+    .hit {
+      border-color: #40ff80;
+      color: #bfffd2;
+      box-shadow:
+        0 0 6px rgba(64, 255, 128, 0.4),
+        0 0 20px rgba(64, 255, 128, 0.25),
+        0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* STAND – orange */
+    .stand {
+      border-color: #ff9a3c;
+      color: #ffe9c9;
+      box-shadow:
+        0 0 6px rgba(255, 154, 60, 0.4),
+        0 0 20px rgba(255, 154, 60, 0.25),
+        0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* DOUBLE – blue */
+    .double {
+      border-color: #3f8cff;
+      color: #d9ebff;
+      box-shadow:
+        0 0 6px rgba(63, 140, 255, 0.4),
+        0 0 20px rgba(63, 140, 255, 0.25),
+        0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* FOLD – red */
+    .fold {
+      border-color: #ff4c6a;
+      color: #ffdce2;
+      box-shadow:
+        0 0 6px rgba(255, 76, 106, 0.4),
+        0 0 20px rgba(255, 76, 106, 0.25),
+        0 4px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* ============================================================
+       HUD + LOG
+    ============================================================ */
+    .hud {
+      margin-top: 14px;
+      font-size: 1rem;
+    }
+
+    input[type="number"] {
+      width: 90px;
+      padding: 4px;
+      background: #061510;
+      color: white;
+      border: 1px solid #333;
+      border-radius: 6px;
+    }
+
+    .control-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-size: 0.9rem;
+      background: #f7c744;
+      color: black;
+    }
+
+    .control-btn.secondary {
+      background: #374151;
+      color: white;
+    }
+
+    .log {
+      margin-top: 14px;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 10px;
+      border-radius: 10px;
+      max-height: 170px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+
+    .log p {
+      margin: 3px 0;
+    }
+
+    .tag {
+      font-weight: 700;
+      margin-right: 4px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="game-wrapper">
+
+  <div class="table">
+    <div class="felt-gradient">
+
+      <!-- Neon Title Arc -->
+      <svg class="table-text" viewBox="0 0 1000 260">
+        <defs>
+          <path id="arc-title" d="M200 200 A300 300 0 0 1 800 200" />
+          <filter id="neonGlow">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feColorMatrix in="blur" type="matrix"
+              values="1 0 1 0 0
+                      0 0 0 0 0
+                      1 0 1 0 0
+                      0 0 0 1 0"
+              result="glow"/>
+            <feMerge>
+              <feMergeNode in="glow"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <text font-size="60"
+              font-weight="700"
+              fill="#ff39ff"
+              letter-spacing="10"
+              filter="url(#neonGlow)">
+          <textPath href="#arc-title"
+                    startOffset="50%"
+                    text-anchor="middle">
+            BLACKJACK
+          </textPath>
+        </text>
+      </svg>
+
+      <!-- Rules + Background Banner Title -->
+      <svg class="table-rules" viewBox="0 0 1000 380">
+        <defs>
+          <!-- Three rules arcs -->
+          <path id="rules-arc-1" d="M140 240 A360 360 0 0 1 860 240" />
+          <path id="rules-arc-2" d="M160 275 A350 350 0 0 1 840 275" />
+          <path id="rules-arc-3" d="M180 310 A340 340 0 0 1 820 310" />
+
+          <!-- Straight banner path for < BLACKJACK > -->
+          <path id="banner-path" d="M260 210 L740 210" />
+
+          <!-- Felt text effect -->
+          <filter id="feltText">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur"/>
+            <feColorMatrix in="blur" type="matrix"
+              values="1 1 1 0 0
+                      1 1 1 0 0
+                      1 1 1 0 0
+                      0 0 0 1 0"
+              result="soft"/>
+            <feBlend in="SourceGraphic" in2="soft" mode="overlay"/>
+          </filter>
+        </defs>
+
+        <!-- Banner Blackjack Title -->
+        <text font-size="40"
+              font-weight="700"
+              fill="rgba(255,255,255,0.5)"
+              letter-spacing="10"
+              filter="url(#feltText)">
+          <textPath href="#banner-path"
+                    startOffset="50%"
+                    text-anchor="middle">
+            &lt; BLACKJACK &gt;
+          </textPath>
+        </text>
+
+        <!-- BLACKJACK PAYS 3 TO 2 -->
+        <text font-size="30"
+              font-weight="700"
+              fill="rgba(255,255,255,0.42)"
+              letter-spacing="6"
+              filter="url(#feltText)">
+          <textPath href="#rules-arc-1"
+                    startOffset="50%"
+                    text-anchor="middle">
+            BLACKJACK PAYS 3 TO 2
+          </textPath>
+        </text>
+
+        <!-- DEALER RULE -->
+        <text font-size="20"
+              font-weight="600"
+              fill="rgba(255,255,255,0.34)"
+              letter-spacing="4"
+              filter="url(#feltText)">
+          <textPath href="#rules-arc-2"
+                    startOffset="50%"
+                    text-anchor="middle">
+            DEALER MUST STAND ON 17 AND DRAW TO 16
+          </textPath>
+        </text>
+
+        <!-- INSURANCE PAYS 2 TO 1 -->
+        <text font-size="28"
+              font-weight="700"
+              fill="rgba(255,255,255,0.45)"
+              letter-spacing="7"
+              filter="url(#feltText)">
+          <textPath href="#rules-arc-3"
+                    startOffset="50%"
+                    text-anchor="middle">
+            INSURANCE PAYS 2 TO 1
+          </textPath>
+        </text>
+      </svg>
+
+      <!-- Dealer -->
+      <div class="dealer-area">
+        <div class="hand-title dealer-name">HOUSE (DEALER)</div>
+        <div class="hand-value" id="dealer-value"></div>
+        <div class="cards" id="dealer-cards"></div>
+      </div>
+
+      <!-- Player -->
+      <div class="player-area">
+        <div class="hand-title">USER</div>
+        <div class="hand-value" id="player-value"></div>
+        <div class="cards" id="player-cards"></div>
+        <div class="chip chip-player">
+          <div class="chip-inner" id="chip-amount">0</div>
+        </div>
+      </div>
+
+      <!-- NPC: Alex -->
+      <div class="npc-left">
+        <div class="hand-title">ALEX</div>
+        <div class="hand-value" id="npc1-value"></div>
+        <div class="cards" id="npc1-cards"></div>
+        <div class="chip chip-alex">
+          <div class="chip-inner" id="chip-amount-npc1">0</div>
+        </div>
+      </div>
+
+      <!-- NPC: Jordan -->
+      <div class="npc-right">
+        <div class="hand-title">JORDAN</div>
+        <div class="hand-value" id="npc2-value"></div>
+        <div class="cards" id="npc2-cards"></div>
+        <div class="chip chip-jordan">
+          <div class="chip-inner" id="chip-amount-npc2">0</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions-right">
+        <button id="hit-btn" class="action-btn hit" disabled>HIT</button>
+        <button id="stand-btn" class="action-btn stand" disabled>STAND</button>
+        <button id="double-btn" class="action-btn double" disabled>DOUBLE</button>
+        <button id="fold-btn" class="action-btn fold" disabled>FOLD</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div class="hud">
+    BET: <span id="player-bet-text">0</span> ·
+    BANK: <span id="player-bank">1000</span><br><br>
+
+    Bet:
+    <input type="number" id="bet-input" min="10" step="10" value="50">
+    <button id="deal-btn" class="control-btn">Deal</button>
+    <button id="next-round-btn" class="control-btn secondary" disabled>Next Round</button>
+    <button id="reset-btn" class="control-btn secondary">Reset Game</button>
+  </div>
+
+  <div class="message" id="main-message"></div>
+  <div class="log" id="log"></div>
+
+</div>
+
+<script>
+  /* ============================================================
+     GAME STATE
+  ============================================================ */
+  const game = {
+    deck: [],
+    hands: { dealer: [], npc1: [], npc2: [], player: [] },
+    bets:  { player: 0, npc1: 0, npc2: 0 },
+    balances: { player: 1000, npc1: 1000, npc2: 1000 },
+    dealerHidden: true,
+    gameState: "betting",
+    playerSurrendered: false,
+    roundFinished: false
   };
 
-  // ===== View =====
+  /* DOM ELEMENTS */
+  const dealerCardsEl = document.getElementById("dealer-cards");
+  const npc1CardsEl   = document.getElementById("npc1-cards");
+  const npc2CardsEl   = document.getElementById("npc2-cards");
+  const playerCardsEl = document.getElementById("player-cards");
 
-  const View = {
-    log: document.getElementById('log'),
-    render(state) {
-      this.log.textContent = `Dealer: ${state.dealer.join(' ')}\nPlayer: ${state.player.join(' ')}`;
+  const dealerValueEl = document.getElementById("dealer-value");
+  const npc1ValueEl   = document.getElementById("npc1-value");
+  const npc2ValueEl   = document.getElementById("npc2-value");
+  const playerValueEl = document.getElementById("player-value");
+
+  const chipPlayerEl  = document.getElementById("chip-amount");
+  const chipNpc1El    = document.getElementById("chip-amount-npc1");
+  const chipNpc2El    = document.getElementById("chip-amount-npc2");
+
+  const playerBankEl     = document.getElementById("player-bank");
+  const playerBetTextEl  = document.getElementById("player-bet-text");
+  const logEl            = document.getElementById("log");
+  const mainMessageEl    = document.getElementById("main-message");
+
+  const dealBtn   = document.getElementById("deal-btn");
+  const hitBtn    = document.getElementById("hit-btn");
+  const standBtn  = document.getElementById("stand-btn");
+  const doubleBtn = document.getElementById("double-btn");
+  const foldBtn   = document.getElementById("fold-btn");
+  const nextBtn   = document.getElementById("next-round-btn");
+  const resetBtn  = document.getElementById("reset-btn");
+  const betInputEl= document.getElementById("bet-input");
+
+  /* ============================================================
+     DECK + HELPERS
+  ============================================================ */
+  function buildDeck() {
+    const ranks = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+    const suits = ["♠","♥","♦","♣"];
+    const deck  = [];
+    for (const r of ranks)
+      for (const s of suits)
+        deck.push({ rank: r, suit: s });
+    return deck;
+  }
+
+  function shuffle(deck) {
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+  }
+
+  function drawCard() {
+    if (!game.deck.length) {
+      game.deck = buildDeck();
+      shuffle(game.deck);
+    }
+    return game.deck.pop();
+  }
+
+  function handValue(hand) {
+    let total = 0;
+    let aces  = 0;
+    for (const c of hand) {
+      if (c.rank === "A") {
+        total += 11;
+        aces++;
+      } else if (["K","Q","J"].includes(c.rank)) {
+        total += 10;
+      } else {
+        total += parseInt(c.rank, 10);
+      }
+    }
+    while (total > 21 && aces > 0) {
+      total -= 10;
+      aces--;
+    }
+    return total;
+  }
+
+  const isBlackjack = h => h.length === 2 && handValue(h) === 21;
+  const isBust      = h => handValue(h) > 21;
+
+  /* ============================================================
+     LOGGING
+  ============================================================ */
+  function startLogGroup() {
+    [...logEl.children].forEach(el => el.style.color = "#ffffff");
+  }
+
+  function log(msg, tag = "Game") {
+    const p = document.createElement("p");
+    const s = document.createElement("span");
+    s.className = "tag";
+    s.textContent = `[${tag}]`;
+    p.appendChild(s);
+    p.appendChild(document.createTextNode(" " + msg));
+    p.style.color = "#39ff14";
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  /* ============================================================
+     RENDERING
+  ============================================================ */
+  function clearBoard() {
+    dealerCardsEl.innerHTML = "";
+    npc1CardsEl.innerHTML   = "";
+    npc2CardsEl.innerHTML   = "";
+    playerCardsEl.innerHTML = "";
+  }
+
+  function renderCard(container, card, { hidden = false, blackjack = false } = {}) {
+    const div = document.createElement("div");
+    div.className = "card";
+    if (hidden) {
+      div.classList.add("hidden");
+      div.textContent = "🂠";
+    } else {
+      div.textContent = card.rank + card.suit;
+    }
+    if (blackjack) div.classList.add("blackjack");
+    container.appendChild(div);
+  }
+
+  function renderHands() {
+    clearBoard();
+
+    // Dealer
+    game.hands.dealer.forEach((c, i) =>
+      renderCard(dealerCardsEl, c, { hidden: i === 0 && game.dealerHidden })
+    );
+    dealerValueEl.textContent =
+      game.dealerHidden ? "Value: ?" : "Value: " + handValue(game.hands.dealer);
+
+    // NPC 1
+    game.hands.npc1.forEach(c => renderCard(npc1CardsEl, c));
+    npc1ValueEl.textContent = "Value: " + handValue(game.hands.npc1);
+
+    // NPC 2
+    game.hands.npc2.forEach(c => renderCard(npc2CardsEl, c));
+    npc2ValueEl.textContent = "Value: " + handValue(game.hands.npc2);
+
+    // Player
+    game.hands.player.forEach(c => renderCard(playerCardsEl, c));
+    playerValueEl.textContent = "Value: " + handValue(game.hands.player);
+
+    // Chips + banks
+    chipPlayerEl.textContent = game.bets.player;
+    chipNpc1El.textContent   = game.bets.npc1;
+    chipNpc2El.textContent   = game.bets.npc2;
+
+    playerBankEl.textContent    = game.balances.player;
+    playerBetTextEl.textContent = game.bets.player;
+  }
+
+  /* ============================================================
+     BUTTON STATES
+  ============================================================ */
+  function enableBetting() {
+    dealBtn.disabled   = false;
+    hitBtn.disabled    = true;
+    standBtn.disabled  = true;
+    doubleBtn.disabled = true;
+    foldBtn.disabled   = true;
+    nextBtn.disabled   = true;
+    betInputEl.disabled = false;
+  }
+
+  function enablePlayerTurn() {
+    dealBtn.disabled   = true;
+    hitBtn.disabled    = false;
+    standBtn.disabled  = false;
+    doubleBtn.disabled = false;
+    foldBtn.disabled   = false;
+    nextBtn.disabled   = true;
+    betInputEl.disabled = true;
+  }
+
+  function enableNextRound() {
+    dealBtn.disabled   = true;
+    hitBtn.disabled    = true;
+    standBtn.disabled  = true;
+    doubleBtn.disabled = true;
+    foldBtn.disabled   = true;
+    nextBtn.disabled   = false;
+    betInputEl.disabled = false;
+  }
+
+  /* ============================================================
+     ROUND RESET + FULL RESET
+  ============================================================ */
+  function resetRound() {
+    game.hands = { dealer: [], npc1: [], npc2: [], player: [] };
+    game.bets  = { player: 0, npc1: 0, npc2: 0 };
+    game.dealerHidden      = true;
+    game.playerSurrendered = false;
+    game.roundFinished     = false;
+    game.gameState         = "betting";
+    enableBetting();
+    renderHands();
+  }
+
+  function fullReset() {
+    game.balances = { player: 1000, npc1: 1000, npc2: 1000 };
+    logEl.innerHTML = "";
+    resetRound();
+    startLogGroup();
+    log("Game fully reset.");
+  }
+
+  /* ============================================================
+     NPC TURNS
+  ============================================================ */
+  function npcAuto(id, label) {
+    const h = game.hands[id];
+    while (handValue(h) < 16) {
+      h.push(drawCard());
+    }
+    log(`${label} stands at ${handValue(h)}${isBust(h) ? " (bust)" : ""}`, label);
+  }
+
+  function takeNpcTurns() {
+    npcAuto("npc1", "Alex");
+    npcAuto("npc2", "Jordan");
+  }
+
+  /* ============================================================
+     DEALER TURN + RESOLUTION
+  ============================================================ */
+  function dealerTurn() {
+    game.dealerHidden = false;
+    renderHands();
+    while (handValue(game.hands.dealer) < 17) {
+      game.hands.dealer.push(drawCard());
+    }
+    log(
+      `Dealer stands at ${handValue(game.hands.dealer)}${isBust(game.hands.dealer) ? " (bust)" : ""}`,
+      "Dealer"
+    );
+    renderHands();
+  }
+
+  function settleHand(id, label) {
+    const bet = game.bets[id];
+    if (bet <= 0) return;
+
+    const h = game.hands[id];
+    const d = game.hands.dealer;
+    const hv = handValue(h);
+    const dv = handValue(d);
+
+    if (id === "player" && game.playerSurrendered) {
+      const loss   = Math.floor(bet / 2);
+      const refund = bet - loss;
+      game.balances[id] += refund;
+      log(`${label} surrenders. Lost ${loss}, refunded ${refund}.`, label);
+      return;
+    }
+
+    const bj  = isBlackjack(h);
+    const dbj = isBlackjack(d);
+    let payout = 0;
+    let msg    = "";
+
+    if (isBust(h)) {
+      msg = "busts and loses.";
+    } else if (isBust(d)) {
+      if (bj) {
+        payout = bet * 2.5;
+        msg    = "wins with Blackjack (3:2)!";
+      } else {
+        payout = bet * 2;
+        msg    = "wins (dealer bust).";
+      }
+    } else if (bj && dbj) {
+      payout = bet;
+      msg    = "pushes (both Blackjack).";
+    } else if (bj) {
+      payout = bet * 2.5;
+      msg    = "wins with Blackjack (3:2)!";
+    } else if (dbj) {
+      msg = "loses (dealer Blackjack).";
+    } else if (hv > dv) {
+      payout = bet * 2;
+      msg    = "wins.";
+    } else if (hv < dv) {
+      msg = "loses.";
+    } else {
+      payout = bet;
+      msg    = "pushes.";
+    }
+
+    game.balances[id] += payout;
+    log(`${label} ${msg}`, label);
+  }
+
+  function endRound() {
+    if (game.roundFinished) return;
+    game.roundFinished = true;
+
+    dealerTurn();
+    settleHand("player", "User");
+    settleHand("npc1", "Alex");
+    settleHand("npc2", "Jordan");
+
+    const dv = handValue(game.hands.dealer);
+    mainMessageEl.textContent =
+      `Round over. Dealer: ${dv}${isBust(game.hands.dealer) ? " (bust)" : ""}`;
+    enableNextRound();
+  }
+
+  /* ============================================================
+     BUTTON LOGIC
+  ============================================================ */
+  dealBtn.onclick = () => {
+    if (game.gameState !== "betting") return;
+    startLogGroup();
+
+    const bet = parseInt(betInputEl.value, 10) || 0;
+    if (bet <= 0) {
+      mainMessageEl.textContent = "Bet must be > 0.";
+      return;
+    }
+    if (bet > game.balances.player) {
+      mainMessageEl.textContent = "Not enough chips.";
+      return;
+    }
+
+    game.deck = buildDeck();
+    shuffle(game.deck);
+
+    game.bets.player    = bet;
+    game.balances.player -= bet;
+
+    game.bets.npc1 = Math.min(game.balances.npc1, 20 + Math.floor(Math.random() * 81));
+    game.balances.npc1 -= game.bets.npc1;
+
+    game.bets.npc2 = Math.min(game.balances.npc2, 20 + Math.floor(Math.random() * 81));
+    game.balances.npc2 -= game.bets.npc2;
+
+    ["dealer","npc1","npc2","player"].forEach(p => game.hands[p].push(drawCard()));
+    ["dealer","npc1","npc2","player"].forEach(p => game.hands[p].push(drawCard()));
+
+    log(`You bet ${bet}. Alex bet ${game.bets.npc1}, Jordan bet ${game.bets.npc2}.`);
+    takeNpcTurns();
+
+    game.gameState = "playerTurn";
+    enablePlayerTurn();
+    renderHands();
+  };
+
+  hitBtn.onclick = () => {
+    if (game.gameState !== "playerTurn") return;
+    startLogGroup();
+    game.hands.player.push(drawCard());
+    renderHands();
+    if (isBust(game.hands.player)) {
+      mainMessageEl.textContent = `Bust (${handValue(game.hands.player)})`;
+      endRound();
     }
   };
 
-  // ===== Controller =====
+  standBtn.onclick = () => {
+    if (game.gameState !== "playerTurn") return;
+    startLogGroup();
+    log("You stand.", "You");
+    endRound();
+  };
 
-  document.getElementById('deal').addEventListener('click', () => {
-    Model.start();
-    View.render(Model.state);
-    document.getElementById('hit').disabled = false;
-    document.getElementById('stand').disabled = false;
-  });
+  doubleBtn.onclick = () => {
+    if (game.gameState !== "playerTurn") return;
+    if (game.balances.player < game.bets.player) {
+      mainMessageEl.textContent = "Not enough chips to double.";
+      return;
+    }
+    startLogGroup();
+    game.balances.player -= game.bets.player;
+    game.bets.player *= 2;
+    log(`You doubled to ${game.bets.player}.`, "You");
+    game.hands.player.push(drawCard());
+    renderHands();
+    endRound();
+  };
 
-  </script>
+  foldBtn.onclick = () => {
+    if (game.gameState !== "playerTurn") return;
+    startLogGroup();
+    game.playerSurrendered = true;
+    log("You surrender.", "You");
+    endRound();
+  };
 
+  nextBtn.onclick = () => {
+    resetRound();
+    startLogGroup();
+    log("New round. Place a bet.");
+    mainMessageEl.textContent = "Place a bet.";
+  };
+
+  resetBtn.onclick = () => {
+    if (confirm("Reset full game?")) fullReset();
+  };
+
+  /* ============================================================
+     INIT
+  ============================================================ */
+  resetRound();
+  startLogGroup();
+  log("Welcome to Blackjack! Place a bet and click Deal.");
+</script>
 </body>
 </html>
