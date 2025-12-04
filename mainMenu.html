@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Arcade Main Menu</title>
+  <style>
+    :root{
+      --bg-dark:#10141b;
+      --panel:#6f6f73;
+      --border:#111;
+      --accent:#ffd35c;
+      --text-main:#f5f5f5;
+    }
+    *{box-sizing:border-box;font-family:"Segoe UI",system-ui,sans-serif}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      /* fallback background in case video fails */
+      background:
+        radial-gradient(circle at top,#2b3a52 0,#10141b 45%,#05060a 100%);
+      color:var(--text-main);
+    }
+
+    /* Fullscreen looping background video */
+    #bg-video {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      z-index: -1;               /* keep it behind everything */
+      filter: brightness(0.9);   /* darken slightly so UI is readable */
+    }
+
+    .menu-wrapper{
+      width:1200px;
+      max-width:100%;
+      height:700px;
+      max-height:100vh;
+      background: rgba(45, 47, 54, 0.25); 
+      border-radius:6px;
+      box-shadow:0 20px 60px rgba(0,0,0,.85);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* Top bar -------------------------------------------------- */
+    .top-bar{
+      display:flex;
+      align-items:center;
+      padding:8px 18px;
+      background:rgb(85, 86, 93, 0.35);
+      border-bottom:4px solid #27272b;
+    }
+    .project-name{
+      padding:8px 20px;
+      border:3px solid var(--border);
+      background:#8a8b91;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-size:.95rem;
+    }
+    .top-tabs{
+      display:flex;
+      margin-left:10px;
+      border:3px solid var(--border);
+      border-left:none;
+      background:#7f7f84;
+    }
+    .tab-btn{
+      border:none;
+      padding:8px 20px;
+      font-weight:700;
+      background:#7f7f84;
+      cursor:pointer;
+      border-left:3px solid var(--border);
+      text-transform:uppercase;
+      font-size:.85rem;
+    }
+    .tab-btn.active{
+      background:#a0a0a7;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+    .top-bar-spacer{
+      flex:1;
+      border-bottom:3px solid var(--border);
+      margin-left:14px;
+      opacity:.35;
+    }
+    .auth{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      border:3px solid var(--border);
+      background:#7f7f84;
+      padding:4px 10px;
+    }
+    .auth button{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-weight:700;
+      font-size:.9rem;
+    }
+    .auth button:disabled{
+      opacity:.4;
+      cursor:default;
+    }
+    .auth .slash{
+      width:26px;
+      height:2px;
+      background:var(--border);
+      transform:rotate(-30deg);
+      transform-origin:center;
+    }
+
+    /* Main content --------------------------------------------- */
+    .content{
+      flex:1;
+      background: rgba(79, 79, 85, 0.25);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .games-frame{
+      flex:1;
+      border:4px solid var(--border);
+      background: rgba(116, 116, 122, 0.13);
+      padding:18px;
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+    }
+    .games-grid{
+      width:100%;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      grid-auto-rows:1fr;
+      gap:26px;
+    }
+    .game-card{
+      border:4px solid var(--border);
+      background:#000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      color:#fff;
+      position:relative;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      box-shadow:0 6px 12px rgba(0,0,0,.7);
+      text-transform:uppercase;
+      font-weight:800;
+      letter-spacing:.05em;
+    }
+    .game-card[data-status="locked"],
+    .game-card[data-status="coming"]{
+      filter:grayscale(.1);
+    }
+    .game-card span{
+      pointer-events:none;
+    }
+    .game-card::after{
+      content:attr(data-label);
+      position:absolute;
+      left:10px;
+      top:10px;
+      font-size:.8rem;
+      letter-spacing:.08em;
+      opacity:.9;
+    }
+    .game-card:hover{
+      transform:translateY(-4px);
+      box-shadow:0 10px 18px rgba(0,0,0,.9);
+      filter:brightness(1.05);
+    }
+    .game-card[data-status="coming"]::before{
+      content:"COMING SOON";
+      position:absolute;
+      bottom:10px;
+      right:10px;
+      font-size:.7rem;
+      padding:2px 8px;
+      border-radius:3px;
+      background:rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.3);
+    }
+    .game-card:nth-child(1){background:#8e0015;}
+    .game-card:nth-child(2){background:#d91010;}
+    .game-card:nth-child(3){background:#f37c23;}
+    .game-card:nth-child(4){background:#050505;}
+    .game-card:nth-child(5){background:#ffe600;}
+    .game-card:nth-child(6){background:#1ea44c;}
+    .game-card:nth-child(7){background:#0099ff;}
+    .game-card:nth-child(8){background:#000000;}
+
+    /* Bottom info panel ---------------------------------------- */
+    .bottom-panel{
+      margin-top:8px;
+      border:4px solid var(--border);
+      background: rgba(112, 112, 118, 0.20);
+      padding:12px 18px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-height:82px;
+    }
+    #info-title{
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-size:.9rem;
+    }
+    #info-text{
+      font-size:.86rem;
+      max-width:1000px;
+      opacity:.95;
+    }
+
+    /* Small footer */
+    footer{
+      font-size:.7rem;
+      text-align:right;
+      padding:4px 10px 6px;
+      background:rgb(62, 62, 68, .30);
+      color:#d0d0d8;
+      border-top:1px solid #151515;
+    }
+
+    @media(max-width:960px){
+      .games-grid{grid-template-columns:repeat(2,1fr);}
+    }
+    @media(max-width:640px){
+      .top-bar{flex-wrap:wrap;gap:6px}
+      .top-bar-spacer{display:none}
+      .auth{margin-left:auto}
+      .games-grid{grid-template-columns:1fr 1fr;}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Video -->
+  <video id="bg-video" autoplay muted loop playsinline>
+    <!-- make sure this file sits next to this HTML file -->
+    <source src="castleLoop.mp4" type="video/mp4">
+  </video>
+
+  <!-- Main Menu UI -->
+  <div class="menu-wrapper">
+    <header class="top-bar">
+      <div class="project-name">NAME OF PROJECT</div>
+      <nav class="top-tabs">
+        <button class="tab-btn active" data-panel="settings">Settings</button>
+        <button class="tab-btn" data-panel="credits">Credits</button>
+      </nav>
+      <div class="top-bar-spacer"></div>
+      <div class="auth">
+        <button id="loginBtn">Login</button>
+        <div class="slash"></div>
+        <button id="logoutBtn" disabled>Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="games-frame">
+        <div class="games-grid">
+          <div class="game-card" data-name="Game 1" data-label="GAME 1" data-status="available"
+               data-description="Classic Blackjack with NPCs and a glowing Vegas-style table.">
+            <span>GAME 1</span>
+          </div>
+          <div class="game-card" data-name="Game 2" data-label="GAME 2" data-status="available"
+               data-description="Fast-paced card challenge. Great for testing your reaction speed.">
+            <span>GAME 2</span>
+          </div>
+          <div class="game-card" data-name="Game 3" data-label="GAME 3" data-status="available"
+               data-description="Risk–reward focused game with bonus multipliers.">
+            <span>GAME 3</span>
+          </div>
+          <div class="game-card" data-name="Game 4" data-label="COMING..." data-status="coming"
+               data-description="This slot is reserved for a future game. Brainstorm something wild.">
+            <span>COMING SOON...</span>
+          </div>
+          <div class="game-card" data-name="Game 4" data-label="GAME 4" data-status="available"
+               data-description="Relaxed, colorful game. Easy to learn, hard to master.">
+            <span>GAME 4</span>
+          </div>
+          <div class="game-card" data-name="Game 5" data-label="GAME 5" data-status="available"
+               data-description="Strategy-focused game with turn-based rounds.">
+            <span>GAME 5</span>
+          </div>
+          <div class="game-card" data-name="Game 6" data-label="GAME 6" data-status="available"
+               data-description="Arcade-style action with quick sessions and high scores.">
+            <span>GAME 6</span>
+          </div>
+          <div class="game-card" data-name="Secret Slot" data-label="COMING..." data-status="coming"
+               data-description="A hidden slot for DLC or experimental prototypes.">
+            <span>COMING SOON...</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="bottom-panel">
+        <div id="info-title">Welcome</div>
+        <div id="info-text">
+          Hover over a game tile to see details. Click a game to “launch” it (placeholder), or use the
+          <strong>Settings</strong> and <strong>Credits</strong> tabs at the top to change this panel.
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      Prototype UI &mdash; replace placeholder games with your real projects.
+    </footer>
+  </div>
+
+<script>
+  // Elements
+  const infoTitle = document.getElementById("info-title");
+  const infoText  = document.getElementById("info-text");
+  const gameCards = document.querySelectorAll(".game-card");
+  const tabButtons = document.querySelectorAll(".tab-btn");
+  const loginBtn  = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  let loggedInUser = null;
+
+  /* --------- Game tile hover & click ------------------------- */
+  gameCards.forEach(card=>{
+    card.addEventListener("mouseenter",()=>{
+      const name = card.dataset.name;
+      const desc = card.dataset.description || "No description yet.";
+      const status = card.dataset.status;
+      infoTitle.textContent = name + (status==="coming" ? " (Coming Soon)" : "");
+      infoText.textContent = desc;
+    });
+    card.addEventListener("mouseleave",()=>{
+      infoTitle.textContent = "Game Hub";
+      infoText.textContent  = "Select a game to play, or choose Settings / Credits above. "
+        + "You can wire these tiles to your real HTML files later.";
+    });
+    card.addEventListener("click",()=>{
+      const name = card.dataset.name;
+      const status = card.dataset.status;
+      if(status==="coming"){
+        alert(`${name} is still in development.\n\nUse this slot for a future game.`);
+        return;
+      }
+      alert(`Launching "${name}"...\n\nHook this up to your actual game page or route.`);
+    });
+  });
+
+  /* --------- Settings / Credits tabs ------------------------- */
+  function showPanel(panel){
+    tabButtons.forEach(btn=>btn.classList.toggle("active",btn.dataset.panel===panel));
+    if(panel==="settings"){
+      infoTitle.textContent = "Settings";
+      infoText.innerHTML =
+        "This is a placeholder settings panel. Ideas to add here:<br>" +
+        "• Toggle sound on/off<br>" +
+        "• Change table or background themes<br>" +
+        "• Adjust difficulty for each game<br>" +
+        "• Show username and save/load profile.";
+    }else{
+      infoTitle.textContent = "Credits";
+      infoText.innerHTML =
+        "Add your team credits here:<br>" +
+        "• Developer names and roles<br>" +
+        "• Course / section information<br>" +
+        "• Special thanks or asset attributions.<br>" +
+        "You can also include links to GitHub or documentation.";
+    }
+  }
+
+  tabButtons.forEach(btn=>{
+    btn.addEventListener("click",()=>showPanel(btn.dataset.panel));
+  });
+
+  /* --------- Simple fake login toggle ------------------------ */
+  loginBtn.addEventListener("click",()=>{
+    if(loggedInUser){
+      alert(`You are already logged in as ${loggedInUser}.`);
+      return;
+    }
+    const name = prompt("Enter a username to log in:", "Player 1");
+    if(!name) return;
+    loggedInUser = name.trim();
+    loginBtn.disabled = true;
+    logoutBtn.disabled = false;
+    infoTitle.textContent = "Welcome, " + loggedInUser;
+    infoText.textContent  = "Your session is active. You can now imagine saving scores, " +
+                            "preferences, or progress per user.";
+  });
+
+  logoutBtn.addEventListener("click",()=>{
+    if(!loggedInUser) return;
+    if(!confirm("Log out?")) return;
+    loggedInUser = null;
+    loginBtn.disabled = false;
+    logoutBtn.disabled = true;
+    infoTitle.textContent = "Logged out";
+    infoText.textContent  = "You are now logged out. Use the Login button again to start a new session.";
+  });
+
+  // Initial state text
+  infoTitle.textContent = "Game Hub";
+  infoText.textContent  =
+    "Hover over a tile to preview a game. Click to simulate launching it. " +
+    "Use the top tabs for Settings or Credits. This entire screen is ready to connect " +
+    "directly to your real games.";
+</script>
+</body>
+</html>
