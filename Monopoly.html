@@ -2,16 +2,16 @@
 <!-- Joshua Kang -->
 
 <!--
-This was created using AI but will be scaled down and back up through user efforts. 
-We used AI to speed up Progress.
+    This was created using AI but will be scaled down and back up through user efforts. 
+    We used AI to speed up Progress.
 -->
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Monopoly Lite</title>
-  <style>
+    <head>
+        <meta charset="UTF-8">
+        <title>Monopoly Lite</title>
+        <style>
     #board {
       display: flex;
       gap: 10px;
@@ -31,20 +31,20 @@ We used AI to speed up Progress.
       border-radius: 50%;
       padding: 5px;
     }
-  </style>
-</head>
-<body>
+        </style>
+    </head>
+    <body>
 
-  <h1>Monopoly Lite</h1>
+        <h1>Monopoly Lite</h1>
 
-  <!-- View -->
-  <div id="board"></div>
+        <!-- View -->
+        <div id="board"></div>
   <pre id="log">Click Roll to begin.</pre>
 
-  <!-- Controller -->
-  <button id="roll">Roll</button>
+        <!-- Controller -->
+        <button id="roll">Roll</button>
 
-  <script>
+        <script>
   // ===== Model =====
 
   const Model = {
@@ -134,7 +134,7 @@ We used AI to speed up Progress.
   View.renderBoard(Model.state);
   View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
 
-  </script>
+        </script>
 
-</body>
+    </body>
 </html>
