@@ -1,8 +1,32 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
         <title>Monopoly Lite — Final Upgraded GUI</title>
+=======
+<!-- Joshua Kang -->
+
+<!--
+    This was created using AI but will be scaled down and back up through user efforts. 
+    We used AI to speed up Progress.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Monopoly Lite</title>
+        <style>
+    #board {
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      grid-template-rows: repeat(5, 60px);
+      gap: 2px;
+      width: max-content;
+      margin: 20px 0;
+    }
+>>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
 
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -16,6 +40,7 @@
     --tile-size:100px;
   }
 
+<<<<<<< HEAD
   *{box-sizing:border-box; font-family:"Poppins",sans-serif;}
 
   html,body{height:100%; margin:0;}
@@ -46,6 +71,26 @@
     border-radius:18px;
     box-shadow: 0 12px 30px rgba(16,30,80,0.12);
   }
+=======
+    #log {
+      white-space: pre-wrap;
+    }
+        </style>
+    </head>
+    <body>
+
+        <h1>Monopoly Lite</h1>
+
+        <!-- View -->
+        <div id="board"></div>
+  <pre id="log">Click Roll to begin.</pre>
+
+        <!-- Controller -->
+        <button id="roll">Roll</button>
+
+        <script>
+    // ===== Model =====
+>>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
 
   .space{
     width:var(--tile-size); height:var(--tile-size);
@@ -244,6 +289,7 @@ const Data = {
   }
 };
 
+<<<<<<< HEAD
 /* =========================
    DOMAIN LAYER (rules & state)
    ========================= */
@@ -596,5 +642,12 @@ const Controller = (function(){
 Controller.init();
         </script>
 
+=======
+    Model.initBoard();
+    View.renderBoard(Model.state);
+    View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
+        </script>
+
+>>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
     </body>
 </html>
