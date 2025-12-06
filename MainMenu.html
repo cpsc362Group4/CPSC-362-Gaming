@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Camelot Arcade</title>
+
+  <style>
+    :root{
+      --bg-dark:#10141b;
+      --panel:#6f6f73;
+      --border:#111;
+      --accent:#ffd35c;
+      --text-main:#f5f5f5;
+    }
+    *{
+      box-sizing:border-box;
+      font-family:"Segoe UI",system-ui,sans-serif;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top,#2b3a52 0,#10141b 45%,#05060a 100%);
+      color:var(--text-main);
+      overflow:hidden;
+    }
+
+    /* Background video */
+    #bg-video {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      z-index: -1;
+      filter: brightness(0.9);
+    }
+
+    /* SHOW MENU BUTTON */
+    #showMenuBtn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 12px 28px;
+      background: rgba(100, 180, 255, 0.15);
+      border: 2px solid #cce7ff;
+      border-radius: 999px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      backdrop-filter: blur(4px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+
+    #showMenuBtn:hover {
+      transform: translate(-50%, -50%) scale(1.05);
+      background: rgba(150, 210, 255, 0.95);
+      box-shadow: 0 0 12px rgba(180, 230, 255, 0.9);
+    }
+
+
+    /* MENU WRAPPER – anchored from TOP so growing only goes DOWN */
+    .menu-wrapper{
+      width: 1150px;
+      max-width:100%;
+      min-height:620px;
+      height:auto;
+      background: rgba(45, 47, 54, 0.25);
+      border-radius:6px;
+      box-shadow:0 16px 50px rgba(0,0,0,.85);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+
+      position:absolute;
+      top:60px;
+      left:50%;
+
+      transform: translateX(-50%) scale(0.35);
+      transform-origin: top center;
+      opacity:0;
+      pointer-events:none;
+
+      transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+      filter: brightness(0.8);
+    }
+
+    .menu-wrapper.menu-visible{
+      transform: translateX(-50%) scale(1);
+      opacity:1;
+      pointer-events:auto;
+      filter: brightness(1);
+    }
+
+    /* HIDE MENU BUTTON */
+    #hideMenuBtn {
+      margin-right: 12px;
+      padding: 6px 14px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #f5f5f5;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      height: 30px;
+      align-self: center;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    #hideMenuBtn:hover {
+      background: rgba(255,255,255,0.18);
+      transform: scale(1.05);
+    }
+
+    /* Top Bar */
+    .top-bar{
+      display:flex;
+      align-items:center;
+      padding:6px 14px;
+      background:rgba(85, 86, 93, 0.35);
+      border-bottom:3px solid #27272b;
+    }
+    .project-name{
+      padding:6px 16px;
+      border:2px solid var(--border);
+      background:#8a8b91;
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-size:.85rem;
+    }
+    .top-tabs{
+      display:flex;
+      margin-left:8px;
+      border:2px solid var(--border);
+      border-left:none;
+      background:#7f7f84;
+    }
+    .tab-btn{
+      border:none;
+      padding:6px 16px;
+      font-weight:700;
+      background:#7f7f84;
+      cursor:pointer;
+      border-left:2px solid var(--border);
+      text-transform:uppercase;
+      font-size:.8rem;
+    }
+    .tab-btn.active{
+      background:#a0a0a7;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+    }
+    .top-bar-spacer{
+      flex:1;
+      border-bottom:2px solid var(--border);
+      margin-left:10px;
+      opacity:.35;
+    }
+    .auth{
+      display:flex;
+      align-items:center;
+      gap:4px;
+      border:2px solid var(--border);
+      background:#7f7f84;
+      padding:3px 8px;
+    }
+    .auth button{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-weight:700;
+      font-size:.8rem;
+    }
+    .auth button:disabled{
+      opacity:.4;
+      cursor:default;
+    }
+    .auth .slash{
+      width:22px;
+      height:2px;
+      background:var(--border);
+      transform:rotate(-30deg);
+    }
+
+    /* Content */
+    .content{
+      flex:1;
+      background: rgba(79, 79, 85, 0.25);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .games-frame{
+      border:3px solid var(--border);
+      background: rgba(116, 116, 122, 0.13);
+      padding:12px;
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+    }
+
+    .games-grid{
+      width:100%;
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:18px;
+    }
+
+    .game-card{
+      border:3px solid var(--border);
+      background:#000;
+      position:relative;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
+      box-shadow:0 4px 8px rgba(0,0,0,.7);
+      text-transform:uppercase;
+      font-weight:800;
+      letter-spacing:.05em;
+      font-size:.9rem;
+      overflow:hidden;
+      text-align:left;
+      aspect-ratio: 16 / 10; /* fixed size for all boxes */
+    }
+
+    .game-card .game-image{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:0.9;
+    }
+
+    .game-card span{
+      position:absolute;
+      bottom:6px;
+      left:6px;
+      z-index:2;
+      font-size:0.70rem;
+      padding:3px 8px;
+      background:rgba(0,0,0,0.55);
+      border-radius:4px;
+      text-transform:uppercase;
+      letter-spacing:0.05em;
+    }
+
+    .game-card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 8px 14px rgba(0,0,0,.9);
+      filter:brightness(1.05);
+    }
+
+    /* Fallback background colors */
+    .game-card:nth-child(1){background:#8e0015;}
+    .game-card:nth-child(2){background:#d91010;}
+    .game-card:nth-child(3){background:#f37c23;}
+    .game-card:nth-child(4){background:#050505;}
+    .game-card:nth-child(5){background:#ffe600;color:black;}
+    .game-card:nth-child(6){background:#1ea44c;}
+    .game-card:nth-child(7){background:#0099ff;}
+    .game-card:nth-child(8){background:#000000;}
+
+    /* Bottom Panel */
+    .bottom-panel{
+      margin-top:6px;
+      border:3px solid var(--border);
+      background: rgba(112, 112, 118, 0.20);
+      padding:8px 14px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      overflow:hidden;
+      max-height:140px;
+      transition:max-height 0.3s ease;
+    }
+    #info-title{
+      font-weight:800;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      font-size:.85rem;
+    }
+    #info-text{
+      font-size:.78rem;
+      max-width:800px;
+      opacity:.95;
+      white-space: normal;  /* allow HTML */
+    }
+
+    .credits-extra{
+      margin-top:4px;
+      overflow:hidden;
+      max-height:0;
+      transition:max-height 0.3s ease;
+      font-size:0.76rem;
+    }
+    .bottom-panel.show-credits .credits-extra{
+      max-height:200px;
+    }
+    .bottom-panel.show-credits,
+    .bottom-panel.show-description{
+      max-height:260px;
+      transition:max-height 0.3s ease;
+    }
+    .credits-extra ul{
+      margin:4px 0 2px 18px;
+      padding:0;
+      line-height:1.3;
+    }
+
+    footer{
+      font-size:.65rem;
+      text-align:right;
+      padding:3px 8px 5px;
+      background:rgba(62, 62, 68, .30);
+      color:#d0d0d8;
+      border-top:1px solid #151515;
+    }
+
+    /* LOGIN MODAL */
+    .login-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .login-modal {
+      background: rgba(24, 26, 34, 0.96);
+      border-radius: 10px;
+      border: 2px solid #ffd35c;
+      padding: 20px 24px;
+      width: 320px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+      color: #f5f5f5;
+    }
+
+    .login-modal h2 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .login-modal p {
+      font-size: 0.85rem;
+      margin: 0 0 12px;
+      opacity: 0.9;
+    }
+
+    .login-modal label {
+      display: block;
+      font-size: 0.78rem;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .login-modal input {
+      width: 100%;
+      padding: 6px 8px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #11151c;
+      color: #f5f5f5;
+    }
+
+    .login-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .login-btn-primary,
+    .login-btn-secondary {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #ffd35c;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: transparent;
+      color: #ffd35c;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    }
+
+    .login-btn-primary {
+      background: #ffd35c;
+      color: #111;
+    }
+
+    .login-btn-primary:hover {
+      background: #ffe58a;
+      transform: translateY(-1px);
+    }
+
+    .login-btn-secondary:hover {
+      background: rgba(255, 211, 92, 0.15);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <video id="bg-video" autoplay muted loop playsinline>
+    <source src="assets/castleLoop.mp4" type="video/mp4">
+  </video>
+
+  <button id="showMenuBtn">CAMELOT ARCADE</button>
+
+  <div class="menu-wrapper" id="menuWrapper">
+
+    <header class="top-bar">
+      <div class="project-name">CAMELOT ARCADE !</div>
+
+      <nav class="top-tabs">
+        <button class="tab-btn active" data-panel="credits">Credits</button>
+      </nav>
+
+      <div class="top-bar-spacer"></div>
+
+      <button id="hideMenuBtn">HIDE MENU</button>
+
+      <div class="auth">
+        <button id="loginBtn">Login</button>
+        <div class="slash"></div>
+        <button id="logoutBtn" disabled>Logout</button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <section class="games-frame">
+        <div class="games-grid">
+
+          <!-- BLACKJACK -->
+          <div class="game-card"
+               data-name="Blackjack"
+               data-description="<p>Blackjack is a fast, simple card game where you try to beat the dealer by getting as close to 21 as possible without going over.</p><strong>Features</strong><ul><li>Quick, easy-to-learn gameplay</li><li>Hit or Stand with simple controls</li><li>Dealer follows standard rules</li><li>Natural 21 wins instantly</li><li>Fresh shuffle every round</li><li>Great for new or experienced players</li></ul>"
+               data-link="games/Blackjack.html">
+            <img src="assets/game1.png" alt="Blackjack" class="game-image">
+            <span>BLACKJACK</span>
+          </div>
+
+          <!-- CHESS -->
+          <div class="game-card"
+               data-name="Chess"
+               data-description="<p>Chess is a classic strategy board game where you outthink your opponent and plan several moves ahead.</p><strong>Features</strong><ul><li>Traditional 8x8 board layout</li><li>Each piece moves in a unique way</li><li>Turn-based, no time pressure by default</li><li>Great for practicing long-term strategy</li><li>Perfect for casual or serious play</li></ul>"
+               data-link="games/ChessBoard_v1.html">
+            <img src="assets/game2.png" alt="Chess" class="game-image">
+            <span>CHESS</span>
+          </div>
+
+          <!-- CONNECT FOUR -->
+          <div class="game-card"
+               data-name="Connect Four"
+               data-description="<p>Connect Four is a quick drop-in strategy game where you race to line up four of your pieces in a row.</p><strong>Features</strong><ul><li>Vertical board with simple controls</li><li>First to 4 in a row wins</li><li>Great for short, fast matches</li><li>Easy to learn in one round</li><li>Fun for all skill levels</li></ul>"
+               data-link="games/connectfour.html">
+            <img src="assets/game3.png" alt="Connect Four" class="game-image">
+            <span>CONNECT 4</span>
+          </div>
+
+          <!-- COMING SOON 1 -->
+          <div class="game-card"
+               data-name="Coming Soon"
+               data-description="<p>This slot is reserved for a future game that will be added to Camelot Arcade.">
+            <img src="assets/game7.png" alt="Coming Soon" class="game-image">
+            <span>COMING SOON...</span>
+          </div>
+
+          <!-- MONOPOLY -->
+          <div class="game-card"
+               data-name="Monopoly"
+               data-description="<p>Monopoly is a property-trading game where you buy, build, and try to bankrupt your opponents.</p><strong>Features</strong><ul><li>Buy and upgrade properties around the board</li><li>Collect rent from other players</li><li>Chance and Community Chest cards mix things up</li><li>Long-form, strategic gameplay</li></ul>"
+               data-link="games/Monopoly.html">
+            <img src="assets/game4.png" alt="Monopoly" class="game-image">
+            <span>MONOPOLY</span>
+          </div>
+
+          <!-- OTHELLO -->
+          <div class="game-card"
+               data-name="Othello"
+               data-description="<p>Othello is a board game about flipping your opponent's pieces and controlling the board.</p><strong>Features</strong><ul><li>Simple rules, deep strategy</li><li>Flip lines of pieces in one move</li><li>Board can swing quickly each turn</li><li>Great for short, tactical games</li></ul>"
+               data-link="games/OThelloPvP.html">
+            <img src="assets/game5.png" alt="Othello" class="game-image">
+            <span>OTHELLO</span>
+          </div>
+
+          <!-- SNAKE -->
+          <div class="game-card"
+               data-name="Snake"
+               data-description="<p>Snake is a retro arcade game where you grow longer by eating and try not to crash.</p><strong>Features</strong><ul><li>Simple arrow key controls</li><li>Snake grows with every piece you eat</li><li>Avoid running into walls or yourself</li><li>Fast, addictive gameplay loop</li></ul>"
+               data-link="games/SnakeGame.html">
+            <img src="assets/game6.png" alt="Snake" class="game-image">
+            <span>SNAKE</span>
+          </div>
+
+          <!-- COMING SOON 1 -->
+          <div class="game-card"
+               data-name="Coming Soon"
+               data-description="<p>This slot is reserved for a future game that will be added to Camelot Arcade.">
+            <img src="assets/game8.png" alt="Coming Soon" class="game-image">
+            <span>COMING SOON...</span>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="bottom-panel" id="bottomPanel">
+        <div id="info-title">GAME HUB</div>
+        <div id="info-text">
+          Select a game or hover over Credits or Login to see more info.
+        </div>
+
+        <div class="credits-extra" id="creditsExtra">
+          <strong>Development Team</strong>
+          <ul>
+            <li> - Cody Nguyen </li>
+            <li> - Jonnathan Quijada</li>
+            <li> - Joshua Kang </li>
+            <li> - Chase Hales </li>
+          </ul>
+        </div>
+      </section>
+
+    </main>
+
+    <footer>
+      Welcome to Camelot Arcade — Choose a game to begin your quest !
+    </footer>
+
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <h2>Login</h2>
+      <p>This is a demo login window. Will implement at a later time.</p>
+
+      <label for="login-username">Username</label>
+      <input id="login-username" type="text" placeholder="Enter username" />
+
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" placeholder="Enter password" />
+
+      <div class="login-modal-actions">
+        <button class="login-btn-secondary" id="loginCancel">Cancel</button>
+        <button class="login-btn-primary" id="loginSubmit">Login</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const infoTitle   = document.getElementById("info-title");
+  const infoText    = document.getElementById("info-text");
+  const gameCards   = document.querySelectorAll(".game-card");
+  const menu        = document.getElementById("menuWrapper");
+  const bottomPanel = document.getElementById("bottomPanel");
+  const showBtn     = document.getElementById("showMenuBtn");
+  const hideBtn     = document.getElementById("hideMenuBtn");
+  const creditsTab  = document.querySelector('.tab-btn[data-panel="credits"]');
+  const loginBtn    = document.getElementById("loginBtn");
+  const logoutBtn   = document.getElementById("logoutBtn");
+
+  const loginModal  = document.getElementById("loginModal");
+  const loginCancel = document.getElementById("loginCancel");
+  const loginSubmit = document.getElementById("loginSubmit");
+
+  function setDefaultInfo() {
+    infoTitle.textContent = "GAME HUB";
+    infoText.innerHTML = "Select a game or hover over Credits or Login to see more info.";
+  }
+
+  /* GAME CARD HOVER / CLICK */
+  let descriptionResetTimeout = null;
+
+  gameCards.forEach(card => {
+    card.addEventListener("mouseenter", () => {
+      const name = card.dataset.name || "Coming Soon";
+      const desc = card.dataset.description || "Select this game to begin.";
+
+      // cancel any pending reset from a previous card
+      if (descriptionResetTimeout) {
+        clearTimeout(descriptionResetTimeout);
+        descriptionResetTimeout = null;
+      }
+
+      infoTitle.textContent = name;
+      infoText.innerHTML = desc;   // HTML descriptions (with <ul><li>)
+      bottomPanel.classList.add("show-description");
+      bottomPanel.classList.remove("show-credits");
+    });
+
+    card.addEventListener("mouseleave", () => {
+      bottomPanel.classList.remove("show-description");
+      descriptionResetTimeout = setTimeout(setDefaultInfo, 300);
+    });
+
+    card.addEventListener("click", () => {
+      if (card.dataset.status === "coming") {
+        alert("This game is still in development.");
+        return;
+      }
+      if (card.dataset.link) window.location.href = card.dataset.link;
+    });
+  });
+
+  /* CREDITS HOVER — ONLY bottom panel extends down */
+  if (creditsTab) {
+    creditsTab.addEventListener("mouseenter", () => {
+      bottomPanel.classList.add("show-credits");
+      bottomPanel.classList.remove("show-description");
+      infoTitle.textContent = "Credits";
+      infoText.innerHTML = "The Developers of Camelot Arcade !";
+    });
+
+    creditsTab.addEventListener("mouseleave", () => {
+      bottomPanel.classList.remove("show-credits");
+      setDefaultInfo();
+    });
+  }
+
+  /* LOGIN / LOGOUT HOVER */
+  loginBtn.addEventListener("mouseenter", () => {
+    infoTitle.textContent = "Login";
+    infoText.innerHTML =
+      "Open the castle login window to simulate profiles or saved progress.";
+  });
+  loginBtn.addEventListener("mouseleave", setDefaultInfo);
+
+  logoutBtn.addEventListener("mouseenter", () => {
+    infoTitle.textContent = "Logout";
+    infoText.innerHTML =
+      "Log out of the current profile to switch users or reset the session.";
+  });
+  logoutBtn.addEventListener("mouseleave", setDefaultInfo);
+
+  /* SHOW MENU */
+  showBtn.addEventListener("click", () => {
+    menu.classList.add("menu-visible");
+    showBtn.style.display = "none";
+    setDefaultInfo();
+  });
+
+  /* HIDE MENU */
+  hideBtn.addEventListener("click", () => {
+    menu.classList.remove("menu-visible");
+    bottomPanel.classList.remove("show-credits");
+    setTimeout(() => {
+      showBtn.style.display = "block";
+      setDefaultInfo();
+    }, 400);
+  });
+
+  /* LOGIN POPUP BEHAVIOR */
+  loginBtn.addEventListener("click", () => {
+    loginModal.style.display = "flex";
+  });
+
+  function closeLoginModal() {
+    loginModal.style.display = "none";
+  }
+
+  loginCancel.addEventListener("click", closeLoginModal);
+
+  loginModal.addEventListener("click", (e) => {
+    if (e.target === loginModal) {
+      closeLoginModal();
+    }
+  });
+
+  loginSubmit.addEventListener("click", () => {
+    alert("Demo login only – no real authentication wired up yet.");
+    closeLoginModal();
+  });
+
+  setDefaultInfo();
+</script>
+
+</body>
+</html>

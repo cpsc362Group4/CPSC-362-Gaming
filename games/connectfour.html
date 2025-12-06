@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Connect Four</title>
+
+    <button class="back-menu-btn" onclick="window.location.href='../MainMenu.html'">
+      ⬅ BACK TO MENU
+    </button>
+    
+    <style>
+      .back-menu-btn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        padding: 10px 22px;
+        background: rgba(0,0,0,0.65);
+        border: 2px solid #ffd35c;
+        border-radius: 999px;
+        color: #ffd35c;
+        font-weight: 800;
+        font-size: 14px;
+        cursor: pointer;
+        z-index: 9999;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        backdrop-filter: blur(4px);
+        transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+      }
+    
+      .back-menu-btn:hover {
+        transform: scale(1.05);
+        background: rgba(255, 211, 92, 0.22);
+        box-shadow: 0 0 12px rgba(255, 211, 92, 0.6);
+      }
+    </style>
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
