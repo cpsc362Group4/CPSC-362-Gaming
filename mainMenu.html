@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Arcade Main Menu</title>
+
   <style>
     :root{
       --bg-dark:#10141b;
@@ -11,21 +12,21 @@
       --accent:#ffd35c;
       --text-main:#f5f5f5;
     }
-    *{box-sizing:border-box;font-family:"Segoe UI",system-ui,sans-serif}
+    *{
+      box-sizing:border-box;
+      font-family:"Segoe UI",system-ui,sans-serif;
+    }
 
     body{
       margin:0;
       min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      /* fallback background in case video fails */
       background:
         radial-gradient(circle at top,#2b3a52 0,#10141b 45%,#05060a 100%);
       color:var(--text-main);
+      overflow:hidden;
     }
 
-    /* Fullscreen looping background video */
+    /* Background video */
     #bg-video {
       position: fixed;
       top: 50%;
@@ -36,56 +37,126 @@
       height: auto;
       transform: translate(-50%, -50%);
       object-fit: cover;
-      z-index: -1;               /* keep it behind everything */
-      filter: brightness(0.9);   /* darken slightly so UI is readable */
+      z-index: -1;
+      filter: brightness(0.9);
     }
 
+    /* SHOW MENU BUTTON */
+    #showMenuBtn {
+      position: absolute;
+      top: 26px;
+      left: 26px;
+      padding: 10px 22px;
+      background: rgba(0,0,0,0.65);
+      border: 2px solid #ffd35c;
+      border-radius: 999px;
+      color: #ffd35c;
+      font-weight: 800;
+      font-size: 16px;
+      cursor: pointer;
+      z-index: 10;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      backdrop-filter: blur(4px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+
+    #showMenuBtn:hover {
+      transform: scale(1.05);
+      background: rgba(255, 211, 92, 0.18);
+      box-shadow: 0 0 12px rgba(255, 211, 92, 0.6);
+    }
+
+    /* MENU WRAPPER (starts hidden) */
     .menu-wrapper{
-      width:1200px;
+      width: 900px;
       max-width:100%;
-      height:700px;
+      height: 540px;
       max-height:100vh;
-      background: rgba(45, 47, 54, 0.25); 
+      background: rgba(45, 47, 54, 0.25);
       border-radius:6px;
-      box-shadow:0 20px 60px rgba(0,0,0,.85);
+      box-shadow:0 16px 50px rgba(0,0,0,.85);
       overflow:hidden;
       display:flex;
       flex-direction:column;
+
+      position:absolute;
+      top:50%;
+      left:50%;
+
+      transform: translate(-130%, -130%) scale(0.35);
+      transform-origin: center center;
+      opacity:0;
+      pointer-events:none;
+
+      transition: transform 0.4s ease, opacity 0.4s ease, filter 0.4s ease;
+      filter: brightness(0.8);
     }
 
-    /* Top bar -------------------------------------------------- */
+    /* MENU WHEN VISIBLE */
+    .menu-wrapper.menu-visible{
+      transform: translate(-50%, -50%) scale(1);
+      opacity:1;
+      pointer-events:auto;
+      filter: brightness(1);
+    }
+
+    /* HIDE MENU BUTTON — inside the top bar on the left side of Login/Logout */
+    #hideMenuBtn {
+      margin-right: 12px;
+      padding: 6px 14px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #f5f5f5;
+      border: 2px solid rgba(255, 255, 255, 0.55);
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      height: 30px;
+      align-self: center;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    #hideMenuBtn:hover {
+      background: rgba(255,255,255,0.18);
+      transform: scale(1.05);
+    }
+
+    /* Top Bar */
     .top-bar{
       display:flex;
       align-items:center;
-      padding:8px 18px;
-      background:rgb(85, 86, 93, 0.35);
-      border-bottom:4px solid #27272b;
+      padding:6px 14px;
+      background:rgba(85, 86, 93, 0.35);
+      border-bottom:3px solid #27272b;
     }
     .project-name{
-      padding:8px 20px;
-      border:3px solid var(--border);
+      padding:6px 16px;
+      border:2px solid var(--border);
       background:#8a8b91;
       font-weight:800;
       letter-spacing:.06em;
       text-transform:uppercase;
-      font-size:.95rem;
+      font-size:.85rem;
     }
     .top-tabs{
       display:flex;
-      margin-left:10px;
-      border:3px solid var(--border);
+      margin-left:8px;
+      border:2px solid var(--border);
       border-left:none;
       background:#7f7f84;
     }
     .tab-btn{
       border:none;
-      padding:8px 20px;
+      padding:6px 16px;
       font-weight:700;
       background:#7f7f84;
       cursor:pointer;
-      border-left:3px solid var(--border);
+      border-left:2px solid var(--border);
       text-transform:uppercase;
-      font-size:.85rem;
+      font-size:.8rem;
     }
     .tab-btn.active{
       background:#a0a0a7;
@@ -93,51 +164,51 @@
     }
     .top-bar-spacer{
       flex:1;
-      border-bottom:3px solid var(--border);
-      margin-left:14px;
+      border-bottom:2px solid var(--border);
+      margin-left:10px;
       opacity:.35;
     }
     .auth{
       display:flex;
       align-items:center;
-      gap:6px;
-      border:3px solid var(--border);
+      gap:4px;
+      border:2px solid var(--border);
       background:#7f7f84;
-      padding:4px 10px;
+      padding:3px 8px;
     }
     .auth button{
       border:none;
       background:transparent;
       cursor:pointer;
       font-weight:700;
-      font-size:.9rem;
+      font-size:.8rem;
     }
     .auth button:disabled{
       opacity:.4;
       cursor:default;
     }
     .auth .slash{
-      width:26px;
+      width:22px;
       height:2px;
       background:var(--border);
       transform:rotate(-30deg);
-      transform-origin:center;
     }
 
-    /* Main content --------------------------------------------- */
+    /* Content */
     .content{
       flex:1;
       background: rgba(79, 79, 85, 0.25);
-      padding:16px;
+      padding:10px;
       display:flex;
       flex-direction:column;
-      gap:10px;
+      gap:8px;
     }
+
     .games-frame{
       flex:1;
-      border:4px solid var(--border);
+      border:3px solid var(--border);
       background: rgba(116, 116, 122, 0.13);
-      padding:18px;
+      padding:12px;
       display:flex;
       align-items:stretch;
       justify-content:center;
@@ -147,10 +218,10 @@
       display:grid;
       grid-template-columns:repeat(4,1fr);
       grid-auto-rows:1fr;
-      gap:26px;
+      gap:18px;
     }
     .game-card{
-      border:4px solid var(--border);
+      border:3px solid var(--border);
       background:#000;
       display:flex;
       align-items:center;
@@ -160,113 +231,176 @@
       position:relative;
       cursor:pointer;
       transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;
-      box-shadow:0 6px 12px rgba(0,0,0,.7);
+      box-shadow:0 4px 8px rgba(0,0,0,.7);
       text-transform:uppercase;
       font-weight:800;
       letter-spacing:.05em;
-    }
-    .game-card[data-status="locked"],
-    .game-card[data-status="coming"]{
-      filter:grayscale(.1);
-    }
-    .game-card span{
-      pointer-events:none;
-    }
-    .game-card::after{
-      content:attr(data-label);
-      position:absolute;
-      left:10px;
-      top:10px;
-      font-size:.8rem;
-      letter-spacing:.08em;
-      opacity:.9;
+      font-size:.9rem;
     }
     .game-card:hover{
-      transform:translateY(-4px);
-      box-shadow:0 10px 18px rgba(0,0,0,.9);
+      transform:translateY(-3px);
+      box-shadow:0 8px 14px rgba(0,0,0,.9);
       filter:brightness(1.05);
     }
-    .game-card[data-status="coming"]::before{
-      content:"COMING SOON";
-      position:absolute;
-      bottom:10px;
-      right:10px;
-      font-size:.7rem;
-      padding:2px 8px;
-      border-radius:3px;
-      background:rgba(255,255,255,.1);
-      border:1px solid rgba(255,255,255,.3);
-    }
+
+    /* Color coding */
     .game-card:nth-child(1){background:#8e0015;}
     .game-card:nth-child(2){background:#d91010;}
     .game-card:nth-child(3){background:#f37c23;}
     .game-card:nth-child(4){background:#050505;}
-    .game-card:nth-child(5){background:#ffe600;}
+    .game-card:nth-child(5){background:#ffe600;color:black;}
     .game-card:nth-child(6){background:#1ea44c;}
     .game-card:nth-child(7){background:#0099ff;}
     .game-card:nth-child(8){background:#000000;}
 
-    /* Bottom info panel ---------------------------------------- */
+    /* Bottom Panel */
     .bottom-panel{
-      margin-top:8px;
-      border:4px solid var(--border);
+      margin-top:6px;
+      border:3px solid var(--border);
       background: rgba(112, 112, 118, 0.20);
-      padding:12px 18px;
+      padding:8px 14px;
       display:flex;
       flex-direction:column;
       gap:4px;
-      min-height:82px;
     }
     #info-title{
       font-weight:800;
       letter-spacing:.06em;
       text-transform:uppercase;
-      font-size:.9rem;
+      font-size:.85rem;
     }
     #info-text{
-      font-size:.86rem;
-      max-width:1000px;
+      font-size:.78rem;
+      max-width:800px;
       opacity:.95;
     }
 
-    /* Small footer */
     footer{
-      font-size:.7rem;
+      font-size:.65rem;
       text-align:right;
-      padding:4px 10px 6px;
-      background:rgb(62, 62, 68, .30);
+      padding:3px 8px 5px;
+      background:rgba(62, 62, 68, .30);
       color:#d0d0d8;
       border-top:1px solid #151515;
     }
 
-    @media(max-width:960px){
-      .games-grid{grid-template-columns:repeat(2,1fr);}
+    /* LOGIN MODAL */
+    .login-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      display: none;            /* hidden by default */
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
     }
-    @media(max-width:640px){
-      .top-bar{flex-wrap:wrap;gap:6px}
-      .top-bar-spacer{display:none}
-      .auth{margin-left:auto}
-      .games-grid{grid-template-columns:1fr 1fr;}
+
+    .login-modal {
+      background: rgba(24, 26, 34, 0.96);
+      border-radius: 10px;
+      border: 2px solid #ffd35c;
+      padding: 20px 24px;
+      width: 320px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+      color: #f5f5f5;
     }
+
+    .login-modal h2 {
+      margin: 0 0 8px;
+      font-size: 1.2rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .login-modal p {
+      font-size: 0.85rem;
+      margin: 0 0 12px;
+      opacity: 0.9;
+    }
+
+    .login-modal label {
+      display: block;
+      font-size: 0.78rem;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .login-modal input {
+      width: 100%;
+      padding: 6px 8px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #11151c;
+      color: #f5f5f5;
+    }
+
+    .login-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .login-btn-primary,
+    .login-btn-secondary {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #ffd35c;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: transparent;
+      color: #ffd35c;
+      transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    }
+
+    .login-btn-primary {
+      background: #ffd35c;
+      color: #111;
+    }
+
+    .login-btn-primary:hover {
+      background: #ffe58a;
+      transform: translateY(-1px);
+    }
+
+    .login-btn-secondary:hover {
+      background: rgba(255, 211, 92, 0.15);
+      transform: translateY(-1px);
+    }
+
   </style>
 </head>
+
 <body>
 
-  <!-- Background Video -->
   <video id="bg-video" autoplay muted loop playsinline>
-    <!-- make sure this file sits next to this HTML file -->
-    <source src="castleLoop.mp4" type="video/mp4">
+    <source src="assets/castleLoop.mp4" type="video/mp4">
   </video>
 
-  <!-- Main Menu UI -->
-  <div class="menu-wrapper">
+  <!-- SHOW MENU BUTTON -->
+  <button id="showMenuBtn">SHOW MENU</button>
+
+  <!-- MAIN MENU -->
+  <div class="menu-wrapper" id="menuWrapper">
+
     <header class="top-bar">
       <div class="project-name">NAME OF PROJECT</div>
+
+      <!-- Tabs: Settings removed, only Credits now -->
       <nav class="top-tabs">
-        <button class="tab-btn active" data-panel="settings">Settings</button>
-        <button class="tab-btn" data-panel="credits">Credits</button>
+        <button class="tab-btn active" data-panel="credits">Credits</button>
       </nav>
+
       <div class="top-bar-spacer"></div>
+
+      <!-- HIDE MENU BUTTON -->
+      <button id="hideMenuBtn">HIDE MENU</button>
+
       <div class="auth">
         <button id="loginBtn">Login</button>
         <div class="slash"></div>
@@ -275,151 +409,219 @@
     </header>
 
     <main class="content">
+
       <section class="games-frame">
         <div class="games-grid">
-          <div class="game-card" data-name="Game 1" data-label="GAME 1" data-status="available"
-               data-description="Classic Blackjack with NPCs and a glowing Vegas-style table.">
+
+          <div class="game-card" data-label="GAME 1"
+               data-name="Blackjack"
+               data-description="Classic Blackjack with NPCs and a Vegas-style neon table."
+               data-link="games/BlackjackTemp.html">
             <span>GAME 1</span>
           </div>
-          <div class="game-card" data-name="Game 2" data-label="GAME 2" data-status="available"
-               data-description="Fast-paced card challenge. Great for testing your reaction speed.">
+
+          <div class="game-card" data-label="GAME 2"
+               data-name="Chess"
+               data-description="Tactical board game. Great for long, strategic matches."
+               data-link="games/ChessBoard_v1.html">
             <span>GAME 2</span>
           </div>
-          <div class="game-card" data-name="Game 3" data-label="GAME 3" data-status="available"
-               data-description="Risk–reward focused game with bonus multipliers.">
+
+          <div class="game-card" data-label="GAME 3"
+               data-name="Connect Four"
+               data-description="Quick-thinking vertical strategy. First to 4 in a row wins."
+               data-link="games/connectfour.html">
             <span>GAME 3</span>
           </div>
-          <div class="game-card" data-name="Game 4" data-label="COMING..." data-status="coming"
-               data-description="This slot is reserved for a future game. Brainstorm something wild.">
+
+          <div class="game-card" data-status="coming"
+               data-name="Coming Soon"
+               data-description="This slot is reserved for a future game.">
             <span>COMING SOON...</span>
           </div>
-          <div class="game-card" data-name="Game 4" data-label="GAME 4" data-status="available"
-               data-description="Relaxed, colorful game. Easy to learn, hard to master.">
+
+          <div class="game-card" data-label="GAME 4"
+               data-name="Monopoly"
+               data-description="Property-trading classic. Build, buy, and bankrupt your friends."
+               data-link="games/Monopoly.html">
             <span>GAME 4</span>
           </div>
-          <div class="game-card" data-name="Game 5" data-label="GAME 5" data-status="available"
-               data-description="Strategy-focused game with turn-based rounds.">
+
+          <div class="game-card" data-label="GAME 5"
+               data-name="Othello"
+               data-description="Flip the board in your favor in this territory control game."
+               data-link="games/OThelloPvP.html">
             <span>GAME 5</span>
           </div>
-          <div class="game-card" data-name="Game 6" data-label="GAME 6" data-status="available"
-               data-description="Arcade-style action with quick sessions and high scores.">
+
+          <div class="game-card" data-label="GAME 6"
+               data-name="Snake"
+               data-description="Arcade-style snake. Eat, grow, and avoid crashing."
+               data-link="games/SnakeGame.html">
             <span>GAME 6</span>
           </div>
-          <div class="game-card" data-name="Secret Slot" data-label="COMING..." data-status="coming"
-               data-description="A hidden slot for DLC or experimental prototypes.">
+
+          <div class="game-card" data-status="coming"
+               data-name="Secret Slot"
+               data-description="A hidden slot for prototypes or DLC-style games.">
             <span>COMING SOON...</span>
           </div>
+
         </div>
       </section>
 
       <section class="bottom-panel">
-        <div id="info-title">Welcome</div>
+        <div id="info-title">Game Hub</div>
         <div id="info-text">
-          Hover over a game tile to see details. Click a game to “launch” it (placeholder), or use the
-          <strong>Settings</strong> and <strong>Credits</strong> tabs at the top to change this panel.
+          Select a game or hover over Credits or Login to see more info.
         </div>
       </section>
+
     </main>
 
     <footer>
-      Prototype UI &mdash; replace placeholder games with your real projects.
+      Prototype UI — replace placeholders with your final game pages.
     </footer>
+
+  </div>
+
+  <!-- LOGIN MODAL -->
+  <div class="login-modal-overlay" id="loginModal">
+    <div class="login-modal">
+      <h2>Login</h2>
+      <p>This is a demo login window. You can wire this up to real auth later.</p>
+
+      <label for="login-username">Username</label>
+      <input id="login-username" type="text" placeholder="Enter username" />
+
+      <label for="login-password">Password</label>
+      <input id="login-password" type="password" placeholder="Enter password" />
+
+      <div class="login-modal-actions">
+        <button class="login-btn-secondary" id="loginCancel">Cancel</button>
+        <button class="login-btn-primary" id="loginSubmit">Login</button>
+      </div>
+    </div>
   </div>
 
 <script>
-  // Elements
-  const infoTitle = document.getElementById("info-title");
-  const infoText  = document.getElementById("info-text");
-  const gameCards = document.querySelectorAll(".game-card");
+  const infoTitle  = document.getElementById("info-title");
+  const infoText   = document.getElementById("info-text");
+  const gameCards  = document.querySelectorAll(".game-card");
+  const menu       = document.getElementById("menuWrapper");
+  const showBtn    = document.getElementById("showMenuBtn");
+  const hideBtn    = document.getElementById("hideMenuBtn");
   const tabButtons = document.querySelectorAll(".tab-btn");
-  const loginBtn  = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
+  const loginBtn   = document.getElementById("loginBtn");
+  const logoutBtn  = document.getElementById("logoutBtn");
 
-  let loggedInUser = null;
+  const loginModal = document.getElementById("loginModal");
+  const loginCancel = document.getElementById("loginCancel");
+  const loginSubmit = document.getElementById("loginSubmit");
 
-  /* --------- Game tile hover & click ------------------------- */
-  gameCards.forEach(card=>{
-    card.addEventListener("mouseenter",()=>{
-      const name = card.dataset.name;
-      const desc = card.dataset.description || "No description yet.";
-      const status = card.dataset.status;
-      infoTitle.textContent = name + (status==="coming" ? " (Coming Soon)" : "");
-      infoText.textContent = desc;
-    });
-    card.addEventListener("mouseleave",()=>{
-      infoTitle.textContent = "Game Hub";
-      infoText.textContent  = "Select a game to play, or choose Settings / Credits above. "
-        + "You can wire these tiles to your real HTML files later.";
-    });
-    card.addEventListener("click",()=>{
-      const name = card.dataset.name;
-      const status = card.dataset.status;
-      if(status==="coming"){
-        alert(`${name} is still in development.\n\nUse this slot for a future game.`);
-        return;
-      }
-      alert(`Launching "${name}"...\n\nHook this up to your actual game page or route.`);
-    });
-  });
+  // Default bottom text
+  function setDefaultInfo() {
+    infoTitle.textContent = "Game Hub";
+    infoText.innerHTML = "Select a game or hover over Credits or Login to see more info.";
 
-  /* --------- Settings / Credits tabs ------------------------- */
-  function showPanel(panel){
-    tabButtons.forEach(btn=>btn.classList.toggle("active",btn.dataset.panel===panel));
-    if(panel==="settings"){
-      infoTitle.textContent = "Settings";
-      infoText.innerHTML =
-        "This is a placeholder settings panel. Ideas to add here:<br>" +
-        "• Toggle sound on/off<br>" +
-        "• Change table or background themes<br>" +
-        "• Adjust difficulty for each game<br>" +
-        "• Show username and save/load profile.";
-    }else{
-      infoTitle.textContent = "Credits";
-      infoText.innerHTML =
-        "Add your team credits here:<br>" +
-        "• Developer names and roles<br>" +
-        "• Course / section information<br>" +
-        "• Special thanks or asset attributions.<br>" +
-        "You can also include links to GitHub or documentation.";
-    }
   }
 
-  tabButtons.forEach(btn=>{
-    btn.addEventListener("click",()=>showPanel(btn.dataset.panel));
+  /* GAME CARD HOVER / CLICK */
+  gameCards.forEach(card => {
+    card.addEventListener("mouseenter", () => {
+      const name = card.dataset.name || "Coming Soon";
+      const desc = card.dataset.description || "Select this game to begin.";
+      infoTitle.textContent = name;
+      infoText.textContent = desc;
+    });
+
+    card.addEventListener("mouseleave", setDefaultInfo);
+
+    card.addEventListener("click", () => {
+      if (card.dataset.status === "coming") {
+        alert("This game is still in development.");
+        return;
+      }
+      if (card.dataset.link) window.location.href = card.dataset.link;
+    });
   });
 
-  /* --------- Simple fake login toggle ------------------------ */
-  loginBtn.addEventListener("click",()=>{
-    if(loggedInUser){
-      alert(`You are already logged in as ${loggedInUser}.`);
-      return;
+  /* CREDITS HOVER (Settings removed) */
+  tabButtons.forEach(btn => {
+    btn.addEventListener("mouseenter", () => {
+      const panel = btn.dataset.panel;
+      if (panel === "credits") {
+          infoTitle.textContent = "Credits";
+          infoText.innerHTML = `Devlopers: 
+              <ul style="margin-top: 6px; line-height: 1.4;">
+                  <li>Cody Nguyen</li>
+                  <li>Jonothan </li>
+              </ul>
+          `;
+      }
+    });
+
+    btn.addEventListener("mouseleave", setDefaultInfo);
+  });
+
+  /* LOGIN / LOGOUT HOVER */
+  loginBtn.addEventListener("mouseenter", () => {
+    infoTitle.textContent = "Login";
+    infoText.textContent =
+      "Open the castle login window to simulate profiles or saved progress.";
+  });
+  loginBtn.addEventListener("mouseleave", setDefaultInfo);
+
+  logoutBtn.addEventListener("mouseenter", () => {
+    infoTitle.textContent = "Logout";
+    infoText.textContent =
+      "Log out of the current profile to switch users or reset the session.";
+  });
+  logoutBtn.addEventListener("mouseleave", setDefaultInfo);
+
+  /* SHOW MENU */
+  showBtn.addEventListener("click", () => {
+    menu.classList.add("menu-visible");
+    showBtn.style.display = "none";
+    setDefaultInfo();
+  });
+
+  /* HIDE MENU */
+  hideBtn.addEventListener("click", () => {
+    menu.classList.remove("menu-visible");
+    setTimeout(() => {
+      showBtn.style.display = "block";
+      setDefaultInfo();
+    }, 400);
+  });
+
+  /* LOGIN POPUP BEHAVIOR */
+  loginBtn.addEventListener("click", () => {
+    loginModal.style.display = "flex";
+  });
+
+  function closeLoginModal() {
+    loginModal.style.display = "none";
+  }
+
+  loginCancel.addEventListener("click", closeLoginModal);
+
+  // Click outside modal closes it
+  loginModal.addEventListener("click", (e) => {
+    if (e.target === loginModal) {
+      closeLoginModal();
     }
-    const name = prompt("Enter a username to log in:", "Player 1");
-    if(!name) return;
-    loggedInUser = name.trim();
-    loginBtn.disabled = true;
-    logoutBtn.disabled = false;
-    infoTitle.textContent = "Welcome, " + loggedInUser;
-    infoText.textContent  = "Your session is active. You can now imagine saving scores, " +
-                            "preferences, or progress per user.";
   });
 
-  logoutBtn.addEventListener("click",()=>{
-    if(!loggedInUser) return;
-    if(!confirm("Log out?")) return;
-    loggedInUser = null;
-    loginBtn.disabled = false;
-    logoutBtn.disabled = true;
-    infoTitle.textContent = "Logged out";
-    infoText.textContent  = "You are now logged out. Use the Login button again to start a new session.";
+  // Demo submit
+  loginSubmit.addEventListener("click", () => {
+    alert("Demo login only – no real authentication wired up yet.");
+    closeLoginModal();
   });
 
-  // Initial state text
-  infoTitle.textContent = "Game Hub";
-  infoText.textContent  =
-    "Hover over a tile to preview a game. Click to simulate launching it. " +
-    "Use the top tabs for Settings or Credits. This entire screen is ready to connect " +
-    "directly to your real games.";
+  // Initialize default bottom text
+  setDefaultInfo();
 </script>
+
 </body>
 </html>
