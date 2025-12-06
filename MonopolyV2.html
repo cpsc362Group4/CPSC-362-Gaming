@@ -1,172 +1,600 @@
-<!-- Joshua Kang -->
-
-<!--
-This was created using AI but will be scaled down and back up through user efforts. 
-We used AI to speed up Progress.
--->
-
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Monopoly Lite</title>
-  <style>
-    #board {
-      display: grid;
-      grid-template-columns: repeat(5, 60px);
-      grid-template-rows: repeat(5, 60px);
-      gap: 2px;
-      width: max-content;
-      margin: 20px 0;
-    }
+    <head>
+        <meta charset="utf-8">
+        <title>Monopoly Lite — Final Upgraded GUI</title>
 
-    .space {
-      width: 60px;
-      height: 60px;
-      border: 1px solid #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 10px;
-      position: relative;
-      text-align: center;
-    }
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-    .player {
-      background-color: yellow;
-      border-radius: 50%;
-      padding: 3px;
-      font-size: 10px;
-      position: absolute;
-      bottom: 2px;
-      right: 2px;
-    }
+        <style>
+  :root{
+    --bg-a:#e9f0ff;
+    --bg-b:#ffffff;
+    --accent:#2f6fe0;
+    --muted:#7d8594;
+    --card:#ffffff;
+    --tile-size:100px;
+  }
 
-    #log {
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
+  *{box-sizing:border-box; font-family:"Poppins",sans-serif;}
 
-  <h1>Monopoly Lite</h1>
+  html,body{height:100%; margin:0;}
+  body{
+    background: linear-gradient(180deg,var(--bg-a),var(--bg-b));
+    display:flex; align-items:center; justify-content:center;
+    padding:28px;
+  }
 
-  <!-- View -->
-  <div id="board"></div>
-  <pre id="log">Click Roll to begin.</pre>
+  .wrapper{
+    width:1200px;
+    max-width:calc(100% - 40px);
+    display:flex; gap:22px; align-items:flex-start;
+  }
 
-  <!-- Controller -->
-  <button id="roll">Roll</button>
+  /* Board area */
+  .boardPanel{
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
 
-  <script>
-    // ===== Model =====
+  #board{
+    display:grid;
+    grid-template-columns: repeat(5, var(--tile-size));
+    grid-template-rows: repeat(5, var(--tile-size));
+    gap:12px;
+    background: linear-gradient(180deg,#ffffff,#f7fbff);
+    padding:22px;
+    border-radius:18px;
+    box-shadow: 0 12px 30px rgba(16,30,80,0.12);
+  }
 
-    const Model = {
-      state: {
-        playerPosition: 0,
-        playerMoney: 1000,
-        board: [],
-        owned: {},
-      },
+  .space{
+    width:var(--tile-size); height:var(--tile-size);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    border-radius:12px; background:linear-gradient(180deg,#fff,#fbfdff);
+    border:1px solid #e3e8f7; position:relative; text-align:center;
+    padding:8px; transition:transform .12s ease, box-shadow .12s ease;
+  }
 
-      initBoard() {
-        // Create 16 spaces for square layout
-        this.state.board = Array.from({ length: 16 }, (_, i) => ({
-          name: `Space ${i}`,
-          cost: 100 + Math.floor(Math.random() * 201),
-        }));
-      },
+  .space:hover{ transform:translateY(-6px); box-shadow:0 12px 30px rgba(10,30,80,0.06); }
 
-      rollDice() {
-        return Math.floor(Math.random() * 6) + 1;
-      },
+  .space.empty{ background:transparent; border:none; box-shadow:none; }
 
-      movePlayer(steps) {
-        const state = this.state;
-        state.playerPosition = (state.playerPosition + steps) % state.board.length;
+  .space .title{ font-weight:700; font-size:13px; color:#2a3550; }
+  .space .meta{ font-size:12px; color:var(--muted); margin-top:6px; }
 
-        const space = state.board[state.playerPosition];
-        const pos = state.playerPosition;
+  /* owner badge */
+  .ownerBadge{
+    position:absolute; top:8px; left:8px; padding:5px 8px; border-radius:8px; font-size:12px; font-weight:700;
+    box-shadow:0 6px 14px rgba(10,30,80,0.06);
+  }
+  .ownerP1{ background:#fff8b0; color:#222; }
+  .ownerP2{ background:#dff7ff; color:#003; }
 
-        // If unowned, auto-buy if enough money
-        if (!state.owned[pos]) {
-          if (state.playerMoney >= space.cost) {
-            state.playerMoney -= space.cost;
-            state.owned[pos] = true;
-            return `Landed on ${space.name}. Bought for $${space.cost}.`;
-          } else {
-            return `Landed on ${space.name}, but not enough money to buy.`;
-          }
-        } else {
-          return `Landed on ${space.name}, already owned.`;
-        }
-      }
-    };
+  /* token */
+  .token{
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    position:absolute; bottom:8px; right:8px; font-weight:700; box-shadow:0 6px 18px rgba(10,30,80,0.12);
+    transition: transform .2s ease;
+  }
+  .token:hover{ transform:scale(1.06); }
 
-    // ===== View =====
+  .tok1{ background:#ffd75a; color:#222; }
+  .tok2{ background:#8de6ff; color:#003; }
 
-    const View = {
-      log: document.getElementById("log"),
-      boardEl: document.getElementById("board"),
+  /* HUD area */
+  .hud{ width:360px; display:flex; flex-direction:column; gap:12px; }
 
-      renderBoard(state) {
-        this.boardEl.innerHTML = "";
+  .card{ background:var(--card); padding:14px; border-radius:12px; box-shadow: 0 8px 24px rgba(15,30,80,0.06); border:1px solid #eef3ff; }
 
-        // Square path mapping: 5x5 grid, 16 active cells
-        const positions = [
-          0,  1,  2,  3,  4,      // Top row
-          9, 14, 19, 24,          // Right column
-          23, 22, 21, 20, 15,     // Bottom row (right to left)
-          10, 5                  // Left column (bottom to top)
-        ];
+  .playersList{ display:flex; flex-direction:column; gap:10px; }
+  .playerRow{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .playerLeft{ display:flex; gap:10px; align-items:center; }
+  .avatar{ width:46px; height:46px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .p1a{ background:#fff6c2; }
+  .p2a{ background:#d6faff; }
 
-        for (let i = 0; i < 25; i++) {
-          const div = document.createElement("div");
-          div.className = "space";
+  .money{ font-weight:700; font-size:15px; }
 
-          const boardIndex = positions.indexOf(i);
-          if (boardIndex !== -1) {
-            const space = state.board[boardIndex];
-            div.textContent = `${space.name}\n$${space.cost}`;
+  .log{ height:220px; overflow:auto; padding:10px; background:#fbfeff; border-radius:10px; border:1px solid #f0f4ff; color:#1f2a44; }
 
-            if (state.playerPosition === boardIndex) {
-              const p = document.createElement("div");
-              p.className = "player";
-              p.textContent = "P";
-              div.appendChild(p);
-            }
+  .controls{ display:flex; gap:8px; align-items:center; justify-content:flex-start; margin-top:6px; }
 
-            if (state.owned[boardIndex]) {
-              div.style.backgroundColor = "#a0f0a0";
-            }
-          } else {
-            div.style.border = "none"; // Empty cell
-          }
+  .btn{ padding:10px 14px; border-radius:10px; border:none; cursor:pointer; font-weight:700; background:var(--accent); color:white; }
+  .btn.secondary{ background:white; color:#2b3550; border:1px solid #e6ecff; box-shadow:none; }
+  .btn:disabled{ opacity:0.45; cursor:not-allowed; box-shadow:none; }
 
-          this.boardEl.appendChild(div);
-        }
-      },
+  .diceBox{ width:74px; height:74px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#fff,#f6fbff); border:1px solid #e8eefc; font-weight:800; font-size:22px; box-shadow: 0 8px 22px rgba(20,40,100,0.06);
+  }
 
-      updateLog(message, money) {
-        this.log.textContent = `${message}\nMoney: $${money}`;
-      }
-    };
+  /* modal */
+  .modalOverlay{ position:fixed; left:0; top:0; width:100%; height:100%; display:none; align-items:center; justify-content:center; background:rgba(10,20,40,0.45); z-index:99; }
+  .modal{ width:360px; max-width:92%; background:#fff; border-radius:12px; padding:18px; box-shadow: 0 12px 32px rgba(10,20,40,0.25); text-align:center; }
+  .modal h3{ margin:0 0 8px; }
+  .modal p{ margin:0 0 16px; color:var(--muted); }
+  .modal .row{ display:flex; gap:12px; justify-content:center; }
 
-    // ===== Controller =====
+  /* small helpers */
+  .small{ font-size:12px; color:var(--muted); }
+  .propBadge{ display:inline-block; font-size:11px; padding:5px 8px; border-radius:8px; border:1px solid #eef5ff; background:#f7fbff; margin:4px; }
+        </style>
+    </head>
+    <body>
 
-    document.getElementById("roll").addEventListener("click", () => {
-      const roll = Model.rollDice();
-      const result = Model.movePlayer(roll);
-      View.renderBoard(Model.state);
-      View.updateLog(`Rolled a ${roll}. ${result}`, Model.state.playerMoney);
+        <div class="wrapper">
+
+            <!-- Board panel -->
+            <div class="boardPanel">
+                <div id="board" aria-hidden="false"></div>
+
+                <div style="display:flex;gap:12px;align-items:center;">
+                    <div class="diceBox" id="diceBox">—</div>
+                    <button class="btn" id="rollBtn">ROLL</button>
+                    <button class="btn secondary" id="endBtn">END TURN</button>
+                    <button class="btn secondary" id="resetBtn">RESET</button>
+                    <button class="btn secondary" id="soundBtn">🔊 On</button>
+                </div>
+            </div>
+
+            <!-- HUD -->
+            <div class="hud">
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:800;font-size:16px;color:#23324a;">Monopoly Lite</div>
+                            <div class="small">2 Players • Buy | Rent | Lose</div>
+                        </div>
+                    </div>
+                    <hr style="border:none;border-top:1px solid #f0f4ff;margin:10px 0;">
+                    <div class="playersList" id="playersList"></div>
+                </div>
+
+                <div class="card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div style="font-weight:700;">Game Log</div>
+                        <div class="small" id="currentInfo">Turn: —</div>
+                    </div>
+                    <div class="log" id="log"></div>
+                </div>
+
+                <div class="card">
+                    <div style="font-weight:700;margin-bottom:8px;">Quick Help</div>
+                    <div class="small">ROLL to roll dice and move. When offered a property, choose Buy or Skip. You lose if your money < 0.</div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Modal overlay -->
+        <div
+            class="modalOverlay"
+            id="modalOverlay"
+            role="dialog"
+            aria-hidden="true"
+        >
+            <div class="modal" id="modalBox">
+                <h3 id="modalTitle">Title</h3>
+                <p id="modalMessage">Message</p>
+                <div class="row" id="modalActions"></div>
+            </div>
+        </div>
+
+        <script>
+/* =========================
+   Small sound helper (WebAudio)
+   ========================= */
+const Sounder = (function(){
+  let ctx=null, enabled=true;
+  function init(){ if (ctx) return; ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+  function beep(freq=440, t=0.06){ if (!enabled) return; init(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); const now=ctx.currentTime; g.gain.exponentialRampToValueAtTime(0.6, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+t); o.start(now); o.stop(now+t+0.02); }
+  return { toggle(){ enabled=!enabled; document.ById('soundBtngetElement').textContent = enabled? '🔊 On':'🔈 Off'; }, roll(){ beep(880,0.06); }, tick(){ beep(1200,0.04); }, buy(){ beep(680,0.12); }, lose(){ beep(160,0.6); }, card(){ beep(520,0.12); } };
+})();
+
+/* =========================
+   DATA LAYER
+   ========================= 
+*/
+const Data = {
+  generateBoard() {
+    // 16 playable spaces (outer ring)
+    const spec = [
+      {type:'start', name:'Go'},
+      {type:'property', name:'Mediterranean Ave'},
+      {type:'property', name:'Baltic Ave'},
+      {type:'chance', name:'Community Chest'},
+      {type:'property', name:'Oriental Ave'},
+      {type:'tax', name:'Income Tax', amount:75},
+      {type:'property', name:'Vermont Ave'},
+      {type:'property', name:'Connecticut Ave'},
+      {type:'chance', name:'Chance'},
+      {type:'property', name:'St. Charles Pl'},
+      {type:'property', name:'States Ave'},
+      {type:'property', name:'Virginia Ave'},
+      {type:'chance', name:'Community Chest'},
+      {type:'tax', name:'Luxury Tax', amount:100},
+      {type:'property', name:'St. James Pl'},
+      {type:'property', name:'Tennessee Ave'}
+    ];
+    return spec.map((s,i)=>{
+      if (s.type==='property') {
+        const base = 100 + (i*12) % 220;
+        return {...s, cost:base, rent: Math.max(20, Math.floor(base*0.14)), owner:null};
+      } else if (s.type==='tax') {
+        return {...s, cost: s.amount || 50, owner:null};
+      } else return {...s, owner:null};
     });
+  },
 
-    // ===== Initialize =====
+  generateDecks(){
+    const chance = [
+      {text:"Bank pays you $50", apply:(st,p)=>{ p.money+=50; return `${p.name} receives $50.`; }},
+      {text:"Pay $50", apply:(st,p)=>{ p.money-=50; return `${p.name} pays $50.`; }},
+      {text:"Go to Go and collect $200", apply:(st,p)=>{ p.pos=0; p.money+=200; return `${p.name} moves to Go and collects $200.`; }},
+      {text:"Advance to property 10", apply:(st,p)=>{ p.pos=10; return `${p.name} advances to property 10.`; }},
+      {text:"Pay other player $25", apply:(st,p)=>{ const o = st.players[(st.turn+1)%2]; p.money-=25; o.money+=25; return `${p.name} pays $25 to ${o.name}.`; }}
+    ];
+    const chest = [
+      {text:"You inherit $100", apply:(st,p)=>{ p.money+=100; return `${p.name} receives $100.`; }},
+      {text:"Doctor fees $50", apply:(st,p)=>{ p.money-=50; return `${p.name} pays $50.`; }},
+      {text:"Stock sale $25", apply:(st,p)=>{ p.money+=25; return `${p.name} receives $25.`; }},
+      {text:"Go back 3 spaces", apply:(st,p)=>{ p.pos = (p.pos-3 + st.board.length) % st.board.length; return `${p.name} moves back 3 spaces.`; }}
+    ];
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a; }
+    return { chance:shuffle(chance), chest:shuffle(chest) };
+  }
+};
 
-    Model.initBoard();
-    View.renderBoard(Model.state);
-    View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
-  </script>
+/* =========================
+   DOMAIN LAYER (rules & state)
+   ========================= */
+const Domain = (function(){
+  const state = {
+    board: [],
+    players: [
+      {id:1, name:'Player 1', pos:0, money:1200, props:[], avatar:'🚗'},
+      {id:2, name:'Player 2', pos:0, money:1200, props:[], avatar:'🚲'}
+    ],
+    turn:0,
+    pending:null, // { player, spaceIndex } when buy offer present
+    decks:null,
+    gameOver:false
+  };
 
-</body>
+  function init(){
+    state.board = Data.generateBoard();
+    state.decks = Data.generateDecks();
+    state.players = [
+      {id:1, name:'Player 1', pos:0, money:1000, props:[], avatar:'🚗'},
+      {id:2, name:'Player 2', pos:0, money:1000, props:[], avatar:'🚲'}
+    ];
+    state.turn = 0; state.pending = null; state.gameOver=false;
+  }
+
+  function rollDice(){ return Math.floor(Math.random()*6)+1; }
+
+  function movePlayerBy(player, steps){
+    player.pos = (player.pos + steps) % state.board.length;
+  }
+
+  function evaluateLanding(player){
+    const space = state.board[player.pos];
+    const other = state.players[(state.turn+1)%2];
+
+    if (space.type === 'tax'){
+      const amt = space.cost || 50; player.money -= amt; return `${player.name} pays tax $${amt}.`;
+    }
+    if (space.type === 'start'){ player.money += 0; return `${player.name} landed on Go.`; }
+    if (space.type === 'chance' || space.type === 'community' || space.type === 'Community Chest'){
+      const deck = (space.type==='chance') ? 'chance' : 'chest';
+      const card = state.decks[deck].shift(); state.decks[deck].push(card);
+      const res = card.apply(state, player); return `Card: ${card.text} — ${res}`;
+    }
+    if (space.type === 'property'){
+      if (space.owner === null){
+        state.pending = { player, spaceIndex: player.pos }; return `${player.name} may buy ${space.name} for $${space.cost}.`;
+      } else if (space.owner === player.id){ return `${player.name} landed on own ${space.name}.`; }
+      else {
+        const rent = space.rent || Math.max(20, Math.floor((space.cost||100)*0.12));
+        player.money -= rent;
+        const owner = state.players.find(p=>p.id===space.owner); if (owner) owner.money += rent;
+        return `${player.name} paid $${rent} rent to ${owner.name}.`;
+      }
+    }
+    return `${player.name} landed on ${space.name}.`;
+  }
+
+  function buyProperty(){
+    if (!state.pending) return "No purchase pending.";
+    const { player, spaceIndex } = state.pending;
+    const s = state.board[spaceIndex];
+    if (player.money >= s.cost){
+      player.money -= s.cost; s.owner = player.id; player.props.push(spaceIndex);
+      state.pending = null;
+      return `${player.name} bought ${s.name} for $${s.cost}.`;
+    } else {
+      state.pending = null;
+      return `${player.name} cannot afford ${s.name}.`;
+    }
+  }
+
+  function skipBuy(){
+    state.pending = null; return 'Purchase skipped.';
+  }
+
+  function checkLoss(){
+    const losers = state.players.filter(p=>p.money < 0);
+    if (losers.length){
+      state.gameOver = true;
+      const winner = state.players.find(p=>p.money >= 0) || null;
+      return winner;
+    }
+    return null;
+  }
+
+  function endTurn(){ state.turn = (state.turn + 1) % state.players.length; }
+
+  function reset(){ init(); }
+
+  function getState(){ return state; }
+
+  return {
+    init, rollDice, movePlayerBy, evaluateLanding, buyProperty, skipBuy, checkLoss, endTurn, reset, getState
+  };
+})();
+
+/* =========================
+   VIEW LAYER (render + animations)
+   ========================= */
+const View = (function(){
+  const boardEl = document.getElementById('board');
+  const playersListEl = document.getElementById('playersList');
+  const logEl = document.getElementById('log');
+  const currentInfo = document.getElementById('currentInfo');
+  const diceBox = document.getElementById('diceBox');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalBox = document.getElementById('modalBox');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalMessage = document.getElementById('modalMessage');
+  const modalActions = document.getElementById('modalActions');
+
+  // mapping of 16 playable indices to grid positions:
+  const positions = 
+        [ 0,1,2,3,4, 
+        15,-1,-1,-1,5, 
+        14,-1,-1,-1,6, 
+        13,-1,-1,-1,7, 
+        12,11,10,9,8 ];
+
+  // create grid
+  function createGrid(){
+    boardEl.innerHTML = '';
+    for (let i=0;i<25;i++){
+      const cell = document.createElement('div');
+      cell.className = 'space';
+      if (positions[i] === -1){ cell.classList.add('empty'); cell.style.border='none'; cell.style.background='transparent'; }
+      cell.dataset.gridIndex = i;
+      boardEl.appendChild(cell);
+    }
+  }
+
+  function findCellForBoardIndex(boardIndex){
+    const gridIndex = positions.indexOf(boardIndex);
+    if (gridIndex === -1) return null;
+    return boardEl.children[gridIndex];
+  }
+
+  function renderBoard(state){
+    // render spaces
+    for (let bi=0; bi<state.board.length; bi++){
+      const cell = findCellForBoardIndex(bi); if (!cell) continue;
+      const s = state.board[bi];
+      cell.innerHTML = '';
+      const t = document.createElement('div'); t.className='title'; t.textContent = s.name;
+      const m = document.createElement('div'); m.className='meta';
+      if (s.type==='property') m.textContent = `$${s.cost} • Rent $${s.rent}`;
+      else if (s.type==='tax') m.textContent = `Tax $${s.cost||50}`;
+      else if (s.type==='start') m.textContent = `Collect on pass`;
+      else m.textContent = s.type;
+      cell.appendChild(t); cell.appendChild(m);
+
+      if (s.owner !== null){
+        const badge = document.createElement('div');
+        badge.className = 'ownerBadge ' + (s.owner===1? 'ownerP1':'ownerP2');
+        badge.textContent = s.owner===1? 'P1':'P2';
+        cell.appendChild(badge);
+      }
+    }
+
+    // remove old tokens and add tokens for each player
+    Array.from(boardEl.querySelectorAll('.token')).forEach(n=>n.remove());
+    state.players.forEach((p,idx)=>{
+      const cell = findCellForBoardIndex(p.pos); if (!cell) return;
+      const token = document.createElement('div');
+      token.className = 'token ' + (idx===0? 'tok1':'tok2');
+      token.textContent = p.avatar;
+      token.title = `${p.name} ($${p.money})`;
+      cell.appendChild(token);
+    });
+  }
+
+  // animate movement (step-by-step)
+  async function animateMovement(state, player, steps){
+    const path = [];
+    let pos = player.pos;
+    for (let i=0;i<steps;i++){
+      pos = (pos + 1) % state.board.length;
+      path.push(pos);
+    }
+    // run steps
+    for (const step of path){
+      player.pos = step;
+      renderBoard(state);
+      await new Promise(r=>setTimeout(r, 250));
+      Sounder.tick();
+    }
+  }
+
+  // dice animation
+  async function animateDice(){
+    diceBox.textContent = '';
+    const frames = 10 + Math.floor(Math.random()*8);
+    let last = 1;
+    for (let i=0;i<frames;i++){
+      const v = 1 + Math.floor(Math.random()*6);
+      diceBox.textContent = v;
+      Sounder.roll();
+      last = v;
+      await new Promise(r=>setTimeout(r, 50 + i*8));
+    }
+    return last;
+  }
+
+  function renderHUD(state){
+    playersListEl.innerHTML = '';
+    state.players.forEach((p,idx)=>{
+      const row = document.createElement('div'); row.className='playerRow';
+      const left = document.createElement('div'); left.className='playerLeft';
+      const av = document.createElement('div'); av.className='avatar ' + (idx===0? 'p1a':'p2a'); av.textContent = p.avatar;
+      const name = document.createElement('div'); name.innerHTML = `<div style="font-weight:800">${p.name}</div><div class="small">Pos ${p.pos}</div>`;
+      left.appendChild(av); left.appendChild(name);
+      const right = document.createElement('div'); right.innerHTML = `<div class="money">$${p.money}</div><div class="small">Props: ${p.props.length}</div>`;
+      row.appendChild(left); row.appendChild(right);
+      // props badges
+      if (p.props.length){
+        const wrap = document.createElement('div'); wrap.style.marginTop='8px';
+        p.props.slice(0,6).forEach(pi=>{ const badge = document.createElement('span'); badge.className='propBadge'; badge.textContent = state.board[pi].name; wrap.appendChild(badge); });
+        row.appendChild(wrap);
+      }
+      playersListEl.appendChild(row);
+    });
+    const cur = state.players[state.turn];
+    currentInfo.textContent = `Turn: ${cur.name} • $${cur.money}`;
+  }
+
+  function pushLog(msg){
+    const now = new Date().toLocaleTimeString();
+    logEl.prepend(`${now} — ${msg}\n\n`);
+  }
+
+  function showModal(title, message, actions=[]){
+    document.getElementById('modalOverlay').style.display='flex';
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
+    const actionsEl = document.getElementById('modalActions'); actionsEl.innerHTML='';
+    actions.forEach(a=>{
+      const b = document.createElement('button'); b.className = 'btn ' + (a.className || '');
+      b.textContent = a.label; b.onclick = ()=>{ a.onClick(); hideModal(); };
+      actionsEl.appendChild(b);
+    });
+  }
+
+  function hideModal(){ document.getElementById('modalOverlay').style.display='none'; }
+
+  return { createGrid, renderBoard, animateMovement, animateDice, renderHUD, pushLog, showModal, hideModal };
+})();
+
+/* =========================
+   CONTROLLER (glue)
+   ========================= */
+const Controller = (function(){
+  const rollBtn = document.getElementById('rollBtn');
+  const endBtn = document.getElementById('endBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const soundBtn = document.getElementById('soundBtn');
+
+  function init(){
+    Domain.init();
+    View.createGrid();
+    const s = Domain.getState();
+    View.renderBoard(s); View.renderHUD(s);
+    View.pushLog('Welcome — Game started.');
+    // listeners
+    rollBtn.onclick = onRoll; endBtn.onclick = onEnd; resetBtn.onclick = onReset; soundBtn.onclick = ()=>{ Sounder.toggle(); };
+    // hide modal if clicked outside
+    document.getElementById('modalOverlay').onclick = (e)=>{ if (e.target.id==='modalOverlay') View.hideModal(); };
+  }
+
+  async function onRoll(){
+    const s = Domain.getState();
+    if (s.gameOver) return;
+    if (s.pending) { View.pushLog('Complete pending buy/skip before rolling.'); return; }
+
+    const rolled = await View.animateDice();
+    View.pushLog(`${s.players[s.turn].name} rolled ${rolled}.`);
+    const player = s.players[s.turn];
+    await View.animateMovement(s, player, rolled);
+
+    const res = Domain.evaluateLanding(player);
+    View.pushLog(res);
+    Sounder.tick();
+
+    // if pending buy offer, open modal
+    if (s.pending){
+      const space = s.board[s.pending.spaceIndex];
+      View.showModal('Buy Property?', `${s.pending.player.name}, buy ${space.name} for $${space.cost}?`, [
+        { label:'Buy', onClick: ()=>{ onBuy(); } },
+        { label:'Skip', className:'secondary', onClick: ()=>{ onSkip(); } }
+      ]);
+      Sounder.card();
+      return;
+    }
+
+    const loser = Domain.checkLoss();
+    if (loser){ finishGame(loser); return; }
+
+    Domain.endTurn();
+    View.renderBoard(s); View.renderHUD(s);
+  }
+
+  function onBuy(){
+    const s = Domain.getState();
+    const msg = Domain.buyProperty();
+    View.pushLog(msg);
+    Sounder.buy();
+    const loser = Domain.checkLoss();
+    if (loser){ finishGame(loser); return; }
+    Domain.endTurn();
+    View.renderBoard(s); View.renderHUD(s);
+  }
+
+  function onSkip(){
+    const s = Domain.getState();
+    const msg = Domain.skipBuy();
+    View.pushLog(msg);
+    Domain.endTurn();
+    View.renderBoard(s); View.renderHUD(s);
+  }
+
+  function onEnd(){
+    const s = Domain.getState();
+    if (s.pending){ View.pushLog('Finish pending purchase first.'); return; }
+    Domain.endTurn();
+    View.renderHUD(s);
+    View.pushLog(`Turn ended. ${s.players[s.turn].name}'s turn.`);
+  }
+
+  function finishGame(winner){
+    const s = Domain.getState();
+    s.gameOver = true;
+    View.pushLog(`GAME OVER — ${winner.name} wins!`);
+    Sounder.lose();
+    View.showModal('Game Over', `${winner.name} wins!`, [ { label:'Reset', onClick: ()=>onReset() } ]);
+  }
+
+  function onReset(){
+    Domain.reset(); const s = Domain.getState();
+    View.renderBoard(s); View.renderHUD(s);
+    View.pushLog('Game reset.');
+  }
+
+  return { init };
+})();
+
+/* =========================
+   Start
+   ========================= */
+Controller.init();
+        </script>
+
+    </body>
 </html>
