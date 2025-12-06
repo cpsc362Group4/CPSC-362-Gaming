@@ -1,84 +1,164 @@
+# 🎮 Camelot Arcade – CPSC 362 Gaming Project
 
-# 🎮 CPSC-362 Group 4 Gaming Project  
-### A collection of simple browser-based games built using HTML, CSS, and JavaScript
+Camelot Arcade is a browser-based collection of mini-games built for **CPSC 362 – Software Engineering**.  
+The project features a fantasy-themed **main menu** that lets players choose from several classic games, all implemented using **HTML, CSS, and JavaScript**.  
+
+The focus of the project is practicing **team collaboration**, **modular design**, and **DevOps fundamentals** such as linting and continuous integration.
 
 ---
 
 ## 🧭 Table of Contents
-- [Project Description](#project-description)
-- [Installation Instructions](#installation-instructions)
-- [Diagram / Visual Explanation](#diagram--visual-explanation)
-- [Known Issues](#known-issues)
-- [To-Do Items](#to-do-items)
+
+- [Overview](#overview)
+- [Games Included](#games-included)
+- [How to Run the Project](#how-to-run-the-project)
+- [Project Structure](#project-structure)
+- [Technology Stack](#technology-stack)
+- [Code Quality (ESLint + GitHub Actions)](#code-quality-eslint--github-actions)
+- [Known Limitations / Future Work](#known-limitations--future-work)
 - [Contributors](#contributors)
 
 ---
 
-## 📖 Project Description
-The **CPSC-362 Group 4 Gaming Project** is a collaborative software engineering assignment that showcases the principles of **DevOps**, **continuous integration**, and **team collaboration**.  
-Our goal is to design multiple small, interactive browser games under a single platform, following good software development practices such as modularity, code reusability, and testing.
+## 📖 Overview
 
-### Main Features
-- Central main menu to access multiple mini-games  
-- Individual HTML/CSS/JS files for each game (e.g., Blackjack, Tic-Tac-Toe, Flappy Bird clone)  
-- Clean folder structure following MVC concepts  
-- ESLint and HTMLHint for maintaining code quality  
-- GitHub Actions for automated lint checks and testing  
+This project brings together several independent web-based mini-games under a unified **Camelot-themed main menu**.  
+Each game exists in its own HTML file and operates independently, but the menu provides a cohesive arcade experience.
+
+The goals for this assignment were:
+
+- Implement multiple small software components within a single system
+- Practice **requirements**, **design**, **iteration planning**, and **team communication**
+- Use **Git**, **GitHub**, and **ESLint** to maintain code quality
+- Introduce **CI/CD pipelines** with GitHub Actions
+
+The main entry point is:
+
+```
+MainMenu.html
+```
+
+Opening that file loads the animated background, menu layout, and links to each game.
 
 ---
 
-## ⚙️ Installation Instructions
+## 🕹 Games Included
 
-### For Developers
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/cpsc362Group4/CPSC-362-Gaming.git
-   cd CPSC-362-Gaming
-2. Open the folder in VS Code (or any preferred IDE).
-3. Install dependencies (if any).
-4. Run using the Live Server extension or simply open index.html in a browser.
-5. To lint the project:
-   ```bash
-   npx eslint .
-   npx htmlhint .
-For Non-Developers
+All games run completely in the browser with no backend required.
 
-1. Download the repository ZIP or open it online.
-2. Locate and open the index.html file in your web browser.
-3. Click any game from the main menu to start playing — no installation required!
+### **1. Blackjack**
+- Hit / Stand system  
+- Dealer logic  
+- Card value calculations  
 
-### 🧩 Diagram / Visual Explanation
+### **2. Connect Four**
+- Two-player grid game  
+- Disc-dropping mechanics  
+- Win detection (horizontal, vertical, diagonal)
 
-High-Level Project Structure (MVC Overview)
-```css
-Main Menu
-   ↓
-Controller → Game Logic (Model)
-   ↓
-HTML/CSS UI (View)
+### **3. Snake**
+- Classic snake movement  
+- Random food spawning  
+- Collision game-over rules  
+
+### **4. Othello (Reversi)**
+- Flip-based gameplay  
+- Valid move detection  
+- Two-player mode  
+
+### **5. Chess (Prototype)**
+- Chessboard rendering  
+- Basic piece movement  
+
+### **6. Monopoly (Prototype)**
+- Board rendering  
+- Player turn rotation  
+- Early logic implementation  
+
+---
+
+## 🚀 How to Run the Project
+
+### ✔ Option 1 — Easiest (Open Locally)
+1. Download or clone the repository  
+2. Double-click **MainMenu.html**  
+3. Select any game from the Camelot Arcade menu  
+
+No server or special setup is needed.
+
+---
+
+### ✔ Option 2 — Run with VS Code Live Server (Recommended)
+1. Open the folder in **VS Code**  
+2. Install the **Live Server** extension  
+3. Right-click **MainMenu.html** → “Open with Live Server”  
+
+---
+
+## 🗂 Project Structure
+
 ```
-Each mini-game is an independent module connected through the main menu interface.
+CPSC-362-Gaming/
+├── MainMenu.html
+├── testing.html
+├── testing2.html
+├── games/
+│   ├── Blackjack.html
+│   ├── ChessBoard_v1.html
+│   ├── Monopoly.html
+│   ├── OThelloPvP.html
+│   ├── SnakeGame.html
+│   └── connectfour.html
+├── assets/
+├── eslint.config.mjs
+├── package.json
+├── .github/
+│   └── workflows/
+│       └── lint.yml
+└── docs/
+    ├── ARCHITECTURE.md
+    ├── FEATURES.md
+    └── BACKLOG.md
+```
 
-### 🐞 Known Issues
+---
 
-- Some games may not scale properly on mobile devices.
-- Audio files may not load in all browsers.
-- Shared scoreboard feature still under development.
+## 🧰 Technology Stack
 
-### 🧱 To-Do Items
+- HTML5  
+- CSS3  
+- JavaScript  
+- Node.js (for tooling)  
+- ESLint  
+- GitHub Actions  
 
-- Add leaderboard tracking for all games
-- Improve responsive layout for smaller screens
-- Implement difficulty settings for each game
-- Add sound effects and background music toggle
-- Polish UI with consistent color themes
+---
 
-### 🫡 Contributors
+## ✅ Code Quality (ESLint + GitHub Actions)
 
-- Cody Nguyen
-- Joshua Kang
-- Jonathan
-- Arianna
-- Muhummad
-- Chase 
+The project uses an ESLint configuration that checks JavaScript and HTML files.  
+GitHub Actions runs linting on every push or pull request.
 
+---
+
+## ⚠️ Known Limitations / Future Work
+
+- Some games are prototypes  
+- Mobile responsiveness varies  
+- Potential improvements:
+  - Leaderboard  
+  - Sound system  
+  - Difficulty settings  
+  - Save system  
+  - Better shared UI components  
+
+---
+
+## 🫡 Contributors
+
+- Cody Nguyen  
+- Joshua Kang  
+- Jonathan  
+- Arianna  
+- Muhummad  
+- Chase  
