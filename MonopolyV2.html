@@ -1,32 +1,8 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
         <title>Monopoly Lite — Final Upgraded GUI</title>
-=======
-<!-- Joshua Kang -->
-
-<!--
-    This was created using AI but will be scaled down and back up through user efforts. 
-    We used AI to speed up Progress.
--->
-
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Monopoly Lite</title>
-        <style>
-    #board {
-      display: grid;
-      grid-template-columns: repeat(5, 60px);
-      grid-template-rows: repeat(5, 60px);
-      gap: 2px;
-      width: max-content;
-      margin: 20px 0;
-    }
->>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
 
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
@@ -40,7 +16,6 @@
     --tile-size:100px;
   }
 
-<<<<<<< HEAD
   *{box-sizing:border-box; font-family:"Poppins",sans-serif;}
 
   html,body{height:100%; margin:0;}
@@ -71,26 +46,6 @@
     border-radius:18px;
     box-shadow: 0 12px 30px rgba(16,30,80,0.12);
   }
-=======
-    #log {
-      white-space: pre-wrap;
-    }
-        </style>
-    </head>
-    <body>
-
-        <h1>Monopoly Lite</h1>
-
-        <!-- View -->
-        <div id="board"></div>
-  <pre id="log">Click Roll to begin.</pre>
-
-        <!-- Controller -->
-        <button id="roll">Roll</button>
-
-        <script>
-    // ===== Model =====
->>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
 
   .space{
     width:var(--tile-size); height:var(--tile-size);
@@ -232,13 +187,12 @@ const Sounder = (function(){
   let ctx=null, enabled=true;
   function init(){ if (ctx) return; ctx = new (window.AudioContext||window.webkitAudioContext)(); }
   function beep(freq=440, t=0.06){ if (!enabled) return; init(); const o=ctx.createOscillator(); const g=ctx.createGain(); o.type='sine'; o.frequency.value=freq; g.gain.value=0.0001; o.connect(g); g.connect(ctx.destination); const now=ctx.currentTime; g.gain.exponentialRampToValueAtTime(0.6, now+0.01); g.gain.exponentialRampToValueAtTime(0.0001, now+t); o.start(now); o.stop(now+t+0.02); }
-  return { toggle(){ enabled=!enabled; document.ById('soundBtngetElement').textContent = enabled? '🔊 On':'🔈 Off'; }, roll(){ beep(880,0.06); }, tick(){ beep(1200,0.04); }, buy(){ beep(680,0.12); }, lose(){ beep(160,0.6); }, card(){ beep(520,0.12); } };
+  return { toggle(){ enabled=!enabled; document.getElementById('soundBtn').textContent = enabled? '🔊 On':'🔈 Off'; }, roll(){ beep(880,0.06); }, tick(){ beep(1200,0.04); }, buy(){ beep(680,0.12); }, lose(){ beep(160,0.6); }, card(){ beep(520,0.12); } };
 })();
 
 /* =========================
    DATA LAYER
-   ========================= 
-*/
+   ========================= */
 const Data = {
   generateBoard() {
     // 16 playable spaces (outer ring)
@@ -289,7 +243,6 @@ const Data = {
   }
 };
 
-<<<<<<< HEAD
 /* =========================
    DOMAIN LAYER (rules & state)
    ========================= */
@@ -310,8 +263,8 @@ const Domain = (function(){
     state.board = Data.generateBoard();
     state.decks = Data.generateDecks();
     state.players = [
-      {id:1, name:'Player 1', pos:0, money:1000, props:[], avatar:'🚗'},
-      {id:2, name:'Player 2', pos:0, money:1000, props:[], avatar:'🚲'}
+      {id:1, name:'Player 1', pos:0, money:1200, props:[], avatar:'🚗'},
+      {id:2, name:'Player 2', pos:0, money:1200, props:[], avatar:'🚲'}
     ];
     state.turn = 0; state.pending = null; state.gameOver=false;
   }
@@ -404,12 +357,7 @@ const View = (function(){
   const modalActions = document.getElementById('modalActions');
 
   // mapping of 16 playable indices to grid positions:
-  const positions = 
-        [ 0,1,2,3,4, 
-        15,-1,-1,-1,5, 
-        14,-1,-1,-1,6, 
-        13,-1,-1,-1,7, 
-        12,11,10,9,8 ];
+  const positions = [ 0,1,2,3,4, 15,-1,-1,-1,5, 14,-1,-1,-1,6, 13,-1,-1,-1,7, 12,11,10,9,8 ];
 
   // create grid
   function createGrid(){
@@ -642,12 +590,5 @@ const Controller = (function(){
 Controller.init();
         </script>
 
-=======
-    Model.initBoard();
-    View.renderBoard(Model.state);
-    View.updateLog("Game started. Click Roll to play.", Model.state.playerMoney);
-        </script>
-
->>>>>>> ef2d5e732aa72623318a0526811c36bcc9c89a76
     </body>
 </html>
