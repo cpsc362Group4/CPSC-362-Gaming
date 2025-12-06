@@ -158,7 +158,5 @@ GitHub Actions runs linting on every push or pull request.
 
 - Cody Nguyen  
 - Joshua Kang  
-- Jonathan  
-- Arianna  
-- Muhummad  
+- Jonathan   
 - Chase  
